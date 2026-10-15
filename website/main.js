@@ -35,7 +35,32 @@
       cards.innerHTML = `<div class="bench-empty">Benchmark results are being updated. Run them yourself with <code>npm run bench</code>.</div>`;
     });
 
+  function headline(data) {
+    // Token ratio vs Codex, only on tasks where both runners reported tokens.
+    const us = data.runners.filter((r) => r.runner.startsWith("swarmcode"));
+    let best = null;
+    for (const r of us) {
+      let mine = 0, theirs = 0;
+      for (const t of data.tasks) {
+        const a = t.results.find((x) => x.runner === r.runner);
+        const b = t.results.find((x) => x.runner === "codex");
+        if (a?.tokens && b?.tokens) { mine += a.tokens; theirs += b.tokens; }
+      }
+      if (mine && theirs && (!best || theirs / mine > best.ratio)) best = { ratio: theirs / mine, name: r.name };
+    }
+    if (best && best.ratio >= 1.2) {
+      $("#stat-tokens").textContent = `${best.ratio.toFixed(1)}× fewer`;
+      $("#stat-tokens-label").textContent = `tokens than Codex CLI on the same tasks (${best.name})`;
+    }
+    const top = us.sort((a, b) => b.passed - a.passed)[0];
+    if (top) {
+      $("#stat-pass").textContent = `${top.passed}/${top.total}`;
+      $("#stat-pass-label").textContent = `real tasks passed, graded by hidden tests (${top.name})`;
+    }
+  }
+
   function render(data) {
+    headline(data);
     const runners = data.runners;
     cards.innerHTML = runners
       .map((r) => {

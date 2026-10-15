@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SwarmCode · Your AI engineering team</title>
+    <title>SwarmCode · One prompt, a whole engineering team</title>
     <meta name="description" content="SwarmCode plans your task, builds it with AI agents working in parallel, tests and reviews the result, and hands you a clean diff. Works with Claude, GPT, Gemini, DeepSeek, OpenRouter and local models." />
     <meta name="theme-color" content="#000000" />
-    <meta property="og:title" content="SwarmCode · Your AI engineering team" />
+    <meta property="og:title" content="SwarmCode · One prompt, a whole engineering team" />
     <meta property="og:description" content="Parallel AI agents that plan, build, test and review your code, with proof for every change." />
     <meta property="og:image" content="/assets/og.png" />
     <meta property="og:type" content="website" />
@@ -30,6 +30,7 @@
         <nav class="links" aria-label="Main">
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
+          <a href="#compare">Compare</a>
           <a href="#benchmarks">Benchmarks</a>
           <a href="#skills">Skills</a>
           <a href="#faq">FAQ</a>
@@ -46,8 +47,8 @@
       <section class="hero">
         <div class="wrap">
           <p class="eyebrow"><span class="dot"></span> <span data-version>v1.0</span> for Windows · free with your own models</p>
-          <h1>Your AI engineering team.</h1>
-          <p class="lede">Describe what you want. SwarmCode plans it, builds it with agents working in parallel, tests and reviews the result, and hands you a clean diff with proof that it works.</p>
+          <h1>One prompt.<br />A whole engineering team.</h1>
+          <p class="lede">Other coding agents give you one assistant. SwarmCode gives you a team: a planner, parallel builders, a tester, a reviewer and a security check. You get back one clean diff with proof that it works.</p>
           <div class="cta-row">
             <a class="btn primary lg" href="/download" data-download>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zm8.5 0H21V21l-9.5-1.3z" fill="currentColor"/></svg>
@@ -56,9 +57,23 @@
             <a class="btn lg" href="#benchmarks">See the benchmarks</a>
           </div>
           <p class="fine"><span data-size>125 MB</span> · Windows 10/11 · <code>npm i -g swarmcode</code> for the CLI on any OS</p>
+          <div class="stats" id="stats">
+            <div><b id="stat-tokens">Lean</b><span id="stat-tokens-label">context: journals and recall instead of re-reading</span></div>
+            <div><b id="stat-pass">12</b><span id="stat-pass-label">real tasks graded by hidden tests</span></div>
+            <div><b>Any</b><span>model: cloud, local or free</span></div>
+            <div><b>35</b><span>expert skills, picked for you</span></div>
+          </div>
           <div class="models">Works with <b>Claude</b> · <b>GPT</b> · <b>Gemini</b> · <b>DeepSeek</b> · <b>OpenRouter</b> · <b>Ollama</b> and any OpenAI-compatible model</div>
         </div>
         <div class="wrap">
+          <div class="swarm" aria-hidden="true">
+            <div class="lane" style="--d:0s;--t:1s"><span class="who">Planner</span><span class="track"><i></i></span><span class="st">4 tasks</span></div>
+            <div class="lane" style="--d:1s;--t:2.2s"><span class="who">Agent 1 · API</span><span class="track"><i></i></span><span class="st">done</span></div>
+            <div class="lane" style="--d:1s;--t:1.6s"><span class="who">Agent 2 · UI</span><span class="track"><i></i></span><span class="st">done</span></div>
+            <div class="lane" style="--d:1s;--t:2.6s"><span class="who">Agent 3 · Tests</span><span class="track"><i></i></span><span class="st">done</span></div>
+            <div class="lane" style="--d:1s;--t:1.3s"><span class="who">Agent 4 · Docs</span><span class="track"><i></i></span><span class="st">done</span></div>
+            <div class="lane result" style="--d:3.7s;--t:1.4s"><span class="who">Merge → Test → Review</span><span class="track"><i></i></span><span class="st ok">✓ 24 tests pass · reviewed · secure</span></div>
+          </div>
           <figure class="shot hero-shot">
             <img src="/assets/agents.png" alt="SwarmCode running four agents in parallel on a plan, with live status for each" width="1858" height="976" />
           </figure>
@@ -79,6 +94,34 @@
             <li><span class="num">5</span><b>Review</b><span>An independent reviewer and a security gate check the combined change.</span></li>
             <li><span class="num">6</span><b>Apply</b><span>You get one diff and a proof report. Apply it, or keep it on a branch.</span></li>
           </ol>
+        </div>
+      </section>
+
+      <!-- Who it's for -->
+      <section class="section">
+        <div class="wrap">
+          <p class="kicker">Built for</p>
+          <h2>Whatever you build, it has a playbook.</h2>
+          <div class="uses">
+            <article>
+              <div class="ico">⌘</div>
+              <h3>App developers</h3>
+              <p>Build web, mobile and API features end to end. Agents test your UI in a real browser and hand back reviewed code.</p>
+              <p class="eg">"Add Stripe checkout with webhooks and tests"</p>
+            </article>
+            <article>
+              <div class="ico">¶</div>
+              <h3>Docs and data</h3>
+              <p>Read PDFs, Word and Excel files, analyse data, and generate polished PDF reports straight from your project.</p>
+              <p class="eg">"Turn these 3 PDFs into a one-page summary PDF"</p>
+            </article>
+            <article>
+              <div class="ico">◈</div>
+              <h3>Security teams</h3>
+              <p>Reviews, secure fixes, threat models, dependency audits, cloud hardening and incident write-ups, with a security gate on every change.</p>
+              <p class="eg">"Audit this repo and fix every high-risk finding"</p>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -129,6 +172,33 @@
               <p>Agents test your web app in a real browser, read PDFs and Word files, and produce polished PDF reports.</p>
             </article>
           </div>
+        </div>
+      </section>
+
+      <!-- Compare -->
+      <section id="compare" class="section">
+        <div class="wrap">
+          <p class="kicker">Compare</p>
+          <h2>What you get that others don't.</h2>
+          <p class="sub">Every agent can write code. SwarmCode is built to <em>finish</em> the job and prove it.</p>
+          <div class="cmp-wrap">
+            <table class="cmp">
+              <thead><tr><th></th><th class="us">SwarmCode</th><th>Claude Code</th><th>Codex CLI</th><th>opencode</th><th>Cursor</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Splits one task across parallel agents, then merges, tests and reviews automatically</th><td class="y">✓</td><td class="p">Subagents you direct</td><td class="p">Parallel tasks, you merge</td><td class="p">Subagents you direct</td><td class="p">Parallel agents, you pick</td></tr>
+                <tr><th scope="row">Hidden acceptance tests written before the code</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
+                <tr><th scope="row">Independent reviewer and security gate before you see the diff</th><td class="y">✓</td><td class="p">Commands you run</td><td class="p">Command you run</td><td class="n">✗</td><td class="p">Separate review tool</td></tr>
+                <tr><th scope="row">Best of 3 across different models, graded automatically</th><td class="y">✓</td><td class="n">✗</td><td class="p">Multiple attempts, you pick</td><td class="n">✗</td><td class="p">Compare models, you pick</td></tr>
+                <tr><th scope="row">Proof report with every check, cost and token count</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
+                <tr><th scope="row">Repo health scan with one-click fixes</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
+                <tr><th scope="row">Works with any model and your own keys</th><td class="y">✓</td><td class="p">Claude models</td><td class="p">OpenAI + local</td><td class="y">✓</td><td class="p">Its model list</td></tr>
+                <tr><th scope="row">Free local models (Ollama)</th><td class="y">✓</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td></tr>
+                <tr><th scope="row">Open source</th><td class="y">✓</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td></tr>
+                <tr><th scope="row">Price</th><td class="y">Free + your model</td><td class="p">Subscription or API</td><td class="p">ChatGPT plan or API</td><td class="y">Free + your model</td><td class="p">Subscription</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="fine left">✓ built in · <span class="p-dot">partial</span> available with manual steps or limits · ✗ not built in. Based on each product's public documentation as of October 2026. Products change quickly; <a class="repo-issues" href="https://github.com/yogeshwardev/MYCODE/issues">tell us</a> if something is out of date.</p>
         </div>
       </section>
 
@@ -221,7 +291,8 @@
       <section class="section final">
         <div class="wrap center">
           <img src="/assets/icon.svg" alt="" width="56" height="56" />
-          <h2>Bring a team to every task.</h2>
+          <h2>Stop babysitting your AI.<br />Give it a team.</h2>
+          <p class="sub center-sub">Free and open source. Bring any model, or run fully local.</p>
           <div class="cta-row center">
             <a class="btn primary lg" href="/download" data-download>Download for Windows</a>
             <a class="btn lg" href="#how">How it works</a>

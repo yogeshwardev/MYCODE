@@ -4,6 +4,6 @@
 window.SWARMCODE_SITE = {
   version: "1.0.0",
   installerSize: "125 MB",
-  downloadUrl: "", // e.g. "https://github.com/you/swarmcode/releases/download/v1.0.0/SwarmCode-Setup-1.0.0.exe"
+  downloadUrl: "https://github.com/yogeshwardev/MYCODE/releases/download/v1.0.0/SwarmCode-Setup-1.0.0.exe",
   repoUrl: "https://github.com/yogeshwardev/MYCODE",
 };
