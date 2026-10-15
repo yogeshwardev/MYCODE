@@ -14,7 +14,8 @@ jobs:
   npm:
     runs-on: ubuntu-latest
     env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # setup-node sets a placeholder NODE_AUTH_TOKEN, so check the secret itself.
+      HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -23,12 +24,15 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm ci
       # Skipped until an NPM_TOKEN secret is added to the repository.
-      - if: env.NODE_AUTH_TOKEN != ''
+      - if: env.HAS_NPM_TOKEN == 'true'
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   desktop:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:

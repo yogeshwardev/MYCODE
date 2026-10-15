@@ -80,7 +80,8 @@
         "deb"
       ],
       "category": "Development",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "maintainer": "SwarmCode contributors <yogeshwardev@users.noreply.github.com>"
     },
     "copyright": "Copyright © 2026 SwarmCode contributors",
     "electronLanguages": [
@@ -89,7 +90,9 @@
     "compression": "maximum"
   },
   "author": {
-    "name": "SwarmCode contributors"
+    "name": "SwarmCode contributors",
+    "email": "yogeshwardev@users.noreply.github.com",
+    "url": "https://github.com/yogeshwardev/MYCODE"
   },
-  "homepage": "https://swarmcode.dev"
+  "homepage": "https://github.com/yogeshwardev/MYCODE"
 }
