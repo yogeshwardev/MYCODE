@@ -36,7 +36,9 @@ ${c.bold("Usage")}
   swarm estimate "<task>"     forecast only: tokens, time and cost for each mode
   swarm health [--tests]      repo health radar: security, dependencies, tests, hotspots
   swarm health --fix          ...then let the agent fix the top actionable item
-  swarm init                  create .swarmcode/config.json in this project
+  swarm plan "<task>"         read-only investigation and a plan; implement it after you approve
+  swarm review [focus]        review uncommitted changes (--base main, --commit <sha>); exit 2 on issues
+  swarm init [--agents]       create .swarmcode/config.json (--agents: also write AGENTS.md)
   swarm models                show configured models and whether keys are set
   swarm sessions              list saved sessions for this project
   swarm skills                list expert skills (security, testing, debugging, ...)
@@ -61,11 +63,17 @@ ${c.bold("Options")}
   --no-apply                  keep a parallel run's result on its branch
   -g, --guarantee             write hidden acceptance tests first; work passes only if they pass
   -s, --skill <name>          apply an expert skill, e.g. --skill security-review (repeatable)
+  -i, --image <file>          attach a screenshot or mockup (png, jpg, gif, webp; repeatable)
+  --plan                      plan mode: investigate read-only and propose before changing anything
   --json                      machine-readable result on stdout (for CI/scripts)
+
+${c.bold("In prompts")}
+  @path/to/file  attach a file's contents to the request
 
 ${c.bold("Interactive")}
   /swarm <task>  parallel pipeline   /context  context usage    /usage  tokens and cost
   /undo          revert last change  /skills    list skills      /skill <name> <task>
+  /plan <task>   plan, then approve  /review [focus]  review uncommitted changes
   /best <n> <task>  best-of-N attempts
   /clear         new conversation    /models    models           /exit   quit
 
@@ -94,10 +102,15 @@ interface Flags {
   key?: string;
   step?: number;
   prompt?: string;
+  plan: boolean;
+  images: string[];
+  base?: string;
+  commit?: string;
+  agents: boolean;
 }
 
 export function parseArgs(argv: string[]): Flags {
-  const f: Flags = { _: [], yes: false, noApply: false, json: false, continue: false, skills: [], guarantee: false, draft: false, tests: false, fix: false, global: false };
+  const f: Flags = { _: [], yes: false, noApply: false, json: false, continue: false, skills: [], guarantee: false, draft: false, tests: false, fix: false, global: false, plan: false, images: [], agents: false };
   const value = (i: number, name: string) => {
     const v = argv[i];
     if (v === undefined || v.startsWith("--")) throw new Error(`${name} needs a value`);
@@ -126,6 +139,11 @@ export function parseArgs(argv: string[]): Flags {
     else if (a === "--key") f.key = value(++i, a);
     else if (a === "--step") f.step = Number(value(++i, a));
     else if (a === "--prompt") f.prompt = value(++i, a);
+    else if (a === "--plan") f.plan = true;
+    else if (a === "--image" || a === "-i") f.images.push(value(++i, a));
+    else if (a === "--base") f.base = value(++i, a);
+    else if (a === "--commit") f.commit = value(++i, a);
+    else if (a === "--agents") f.agents = true;
     else if (a === "--help" || a === "-h") f._.unshift("help");
     else if (a === "--version" || a === "-v") f._.unshift("version");
     else if (a.startsWith("-") && a.length > 1) throw new Error(`Unknown option ${a}. See swarm --help.`);
@@ -141,6 +159,7 @@ interface Cli {
   renderer: Renderer;
   out: NodeJS.WriteStream;
   ask: (q: string) => Promise<string>;
+  confirm: (q: string) => Promise<boolean>;
   close: () => Promise<void>;
 }
 
@@ -184,6 +203,15 @@ async function open(flags: Flags): Promise<Cli> {
         if (!flags.json) out.write(`\n${report}\n\n`);
       },
       confirmApply: () => yesNo("Apply these changes to your working tree?"),
+      ask: rl
+        ? async (question, options) => {
+            out.write(`\n${c.yellow("?")} ${c.bold(question)}\n`);
+            options.forEach((o, i) => out.write(`  ${c.cyan(String(i + 1))}. ${o}\n`));
+            const a = (await ask(c.gray(options.length ? "Pick a number or type an answer (Enter to skip): " : "Your answer (Enter to skip): "))).trim();
+            const n = Number(a);
+            return Number.isInteger(n) && n >= 1 && n <= options.length ? options[n - 1] : a;
+          }
+        : undefined,
     },
     {
       model: flags.model,
@@ -223,6 +251,7 @@ async function open(flags: Flags): Promise<Cli> {
     renderer,
     out,
     ask,
+    confirm: yesNo,
     close: async () => {
       renderer.stop();
       rl?.close();
@@ -288,7 +317,11 @@ async function runTask(flags: Flags, task: string, mode: "auto" | "swarm" | "bes
         out.write(r.branch ? `The result is on branch ${c.bold(r.branch)}. Merge it with: git merge ${r.branch}\n` : `${r.report}\n`);
       }
     } else {
-      const text = await engine.send(task, { skills: flags.skills, guarantee: flags.guarantee });
+      const images = flags.images.map(loadImage);
+      let text = await engine.send(task, { skills: flags.skills, guarantee: flags.guarantee, plan: flags.plan, images });
+      if (flags.plan && !flags.json && !flags.yes && (await cli.confirm("Implement this plan?"))) {
+        text = await engine.send("Implement the plan above. Follow it, adjust if you find something it missed, and verify the result.", { skills: flags.skills, guarantee: flags.guarantee });
+      }
       if (flags.json) {
         const json = { status: "success", session: engine.sessionId, result: text, usage: engine.usage.toJSON(), durationMs: Date.now() - started };
         process.stdout.write(JSON.stringify(json, null, 2) + "\n");
@@ -304,6 +337,42 @@ async function runTask(flags: Flags, task: string, mode: "auto" | "swarm" | "bes
   }
   if (!flags.json) out.write(c.gray(`\n${Math.round((Date.now() - started) / 1000)}s · ${engine.usage.report()}\n`));
   return code;
+}
+
+const AGENTS_PROMPT =
+  "Write an AGENTS.md file at the root of this repository for AI coding agents (and new contributors). Explore the code first. Keep it under 120 lines and specific to this project: what it is; how to install, build, run, test and lint (exact commands that work here); the layout of the main folders; code style and conventions you can observe; and gotchas. If AGENTS.md already exists, improve it instead of replacing what is still accurate.";
+
+const IMAGE_TYPES: Record<string, string> = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp" };
+
+/** Read an image passed with --image. */
+function loadImage(file: string) {
+  const mediaType = IMAGE_TYPES[path.extname(file).toLowerCase()];
+  if (!mediaType) throw new Error(`--image supports ${Object.keys(IMAGE_TYPES).join(", ")}: ${file}`);
+  if (!fs.existsSync(file)) throw new Error(`Image not found: ${file}`);
+  const data = fs.readFileSync(file);
+  if (data.length > 5 * 1024 * 1024) throw new Error(`Image is over 5 MB: ${file}`);
+  return { mediaType, data: data.toString("base64") };
+}
+
+/** swarm review [--base <ref> | --commit <sha>] [focus]: exit 0 if clean, 2 if issues were found. */
+async function reviewCommand(flags: Flags, focus: string): Promise<number> {
+  const cli = await open(flags);
+  const { engine, out } = cli;
+  const started = Date.now();
+  try {
+    out.write(c.gray(`Reviewing ${flags.commit ? `commit ${flags.commit}` : flags.base ? `changes since ${flags.base}` : "uncommitted changes"}...\n`));
+    const r = await engine.review({ base: flags.base, commit: flags.commit, focus: focus || undefined });
+    if (flags.json) process.stdout.write(JSON.stringify({ status: r.approved ? "clean" : "issues", scope: r.scope, lines: r.diffLines, feedback: r.feedback, usage: engine.usage.toJSON() }, null, 2) + "\n");
+    else out.write(`\n${r.approved ? c.green("✔ No material problems found.") : c.yellow("Issues found:")}\n${r.feedback.replace(/^\**LGTM\**\s*/i, "")}\n`);
+    return r.approved ? 0 : 2;
+  } catch (err) {
+    if (flags.json) process.stdout.write(JSON.stringify({ status: "error", error: (err as Error).message }) + "\n");
+    else out.write(c.red(`Error: ${(err as Error).message}\n`));
+    return 1;
+  } finally {
+    await cli.close();
+    if (!flags.json) out.write(c.gray(`\n${Math.round((Date.now() - started) / 1000)}s · ${engine.usage.report()}\n`));
+  }
 }
 
 async function interactive(flags: Flags): Promise<number> {
@@ -365,6 +434,16 @@ async function interactive(flags: Flags): Promise<number> {
           const [name, ...rest] = args;
           if (!name || !rest.length) out.write("Usage: /skill <name> <task>\n");
           else await engine.send(rest.join(" "), { skills: [name] });
+        } else if (command === "/plan") {
+          const goal = args.join(" ");
+          if (!goal) out.write("Usage: /plan <task>\n");
+          else {
+            await engine.send(goal, { plan: true });
+            if (await cli.confirm("Implement this plan?")) await engine.send("Implement the plan above. Follow it, adjust if you find something it missed, and verify the result.");
+          }
+        } else if (command === "/review") {
+          const r = await engine.review({ focus: args.join(" ") || undefined });
+          out.write(`\n${r.approved ? c.green("✔ No material problems found.") : c.yellow("Issues found:")}\n${r.feedback.replace(/^\**LGTM\**\s*/i, "")}\n`);
         } else {
           await engine.send(input, { skills: flags.skills });
         }
@@ -485,7 +564,12 @@ async function main(): Promise<number> {
       return 0;
     case "init":
       init(root);
+      if (flags.agents) return runTask(flags, AGENTS_PROMPT, "auto");
       return 0;
+    case "plan":
+      return runTask({ ...flags, plan: true }, rest.join(" "), "auto");
+    case "review":
+      return reviewCommand(flags, rest.join(" "));
     case "models":
       if (flags.model) process.env.SWARMCODE_MODEL = flags.model;
       showModels(loadConfig(root));

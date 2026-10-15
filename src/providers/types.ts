@@ -52,6 +52,15 @@ export interface TurnInput {
   toolResults?: ToolResult[];
   /** Ask for a text-only answer this turn (used for summaries/compaction). */
   noTools?: boolean;
+  /** Images attached by the user (screenshots, mockups, diagrams). */
+  images?: ImageInput[];
+}
+
+export interface ImageInput {
+  /** e.g. "image/png" */
+  mediaType: string;
+  /** Base64-encoded bytes. */
+  data: string;
 }
 
 export interface TurnHooks {

@@ -48,7 +48,7 @@ export async function reviewChange(opts: ReviewOptions): Promise<ReviewResult> {
     model: opts.model,
     effort: opts.effort,
     system: `${REVIEWER_PROMPT}\n\n<environment>\nWorkspace root: ${opts.root}\n</environment>`,
-    tools: READ_ONLY_TOOLS.filter((t) => t.spec.name !== "web_fetch"),
+    tools: READ_ONLY_TOOLS.filter((t) => !t.spec.name.startsWith("web_")),
     ctx: { root: opts.root, approve: async () => true, signal: opts.signal },
     events: opts.events,
     usage: opts.usage,

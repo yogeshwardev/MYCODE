@@ -53,7 +53,8 @@ export type UserRequest =
   | { id: string; kind: "approve"; approval: string; summary: string }
   | { id: string; kind: "plan"; plan: Plan }
   | { id: string; kind: "apply"; report: string; diff: string }
-  | { id: string; kind: "mode"; size: string; reason: string; recommended: string; why: string; options: ModeOption[] };
+  | { id: string; kind: "mode"; size: string; reason: string; recommended: string; why: string; options: ModeOption[] }
+  | { id: string; kind: "question"; question: string; options: string[] };
 
 export interface ModeOption {
   mode: "agent" | "swarm" | "best";
@@ -77,7 +78,19 @@ export interface HealthReportView {
   stats: { files: number; sourceFiles: number; testFiles: number };
 }
 
-export type RequestAnswer = { allow: boolean; always?: boolean; mode?: "agent" | "swarm" | "best" };
+export type RequestAnswer = { allow: boolean; always?: boolean; mode?: "agent" | "swarm" | "best"; text?: string };
+
+/** An image the user pasted or dropped into the composer. */
+export interface ImageAttachment {
+  mediaType: string;
+  /** Base64 without the data: prefix. */
+  data: string;
+}
+
+export interface SendOptions {
+  plan?: boolean;
+  images?: ImageAttachment[];
+}
 
 export interface AppState {
   recent: string[];
@@ -105,7 +118,8 @@ export type Push =
 export interface SwarmApi {
   state(): Promise<AppState>;
   openProject(path?: string): Promise<ProjectInfo | null>;
-  send(prompt: string, skills?: string[], guarantee?: boolean): Promise<{ text: string }>;
+  send(prompt: string, skills?: string[], guarantee?: boolean, opts?: SendOptions): Promise<{ text: string }>;
+  review(focus?: string): Promise<{ approved: boolean; feedback: string; scope: string }>;
   auto(goal: string, guarantee?: boolean, skills?: string[]): Promise<{ text: string; pick: string }>;
   health(runTests: boolean): Promise<HealthReportView>;
   undo(): Promise<string[]>;

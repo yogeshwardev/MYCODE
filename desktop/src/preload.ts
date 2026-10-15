@@ -5,7 +5,8 @@ import type { Push, SwarmApi } from "./shared.js";
 const api: SwarmApi = {
   state: () => ipcRenderer.invoke("state"),
   openProject: (p) => ipcRenderer.invoke("openProject", p),
-  send: (prompt, skills, guarantee) => ipcRenderer.invoke("send", prompt, skills, guarantee),
+  send: (prompt, skills, guarantee, opts) => ipcRenderer.invoke("send", prompt, skills, guarantee, opts),
+  review: (focus) => ipcRenderer.invoke("review", focus),
   auto: (goal, guarantee, skills) => ipcRenderer.invoke("auto", goal, guarantee, skills),
   health: (runTests) => ipcRenderer.invoke("health", runTests),
   undo: () => ipcRenderer.invoke("undo"),

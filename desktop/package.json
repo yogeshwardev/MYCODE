@@ -1,7 +1,7 @@
 {
   "name": "swarmcode-desktop",
   "productName": "SwarmCode",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SwarmCode desktop: a multi-agent AI coding workspace",
   "license": "Apache-2.0",
   "main": "dist/main.mjs",

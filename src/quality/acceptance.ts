@@ -114,7 +114,7 @@ export async function authorAcceptanceTests(opts: {
     model: opts.model,
     effort: opts.effort,
     system: `${AUTHOR_PROMPT}\n\n<environment>\nWorkspace root: ${opts.root}\n</environment>`,
-    tools: [...READ_ONLY_TOOLS.filter((t) => t.spec.name !== "web_fetch"), submitTool(opts.root, (s) => (submitted = s))],
+    tools: [...READ_ONLY_TOOLS.filter((t) => !t.spec.name.startsWith("web_")), submitTool(opts.root, (s) => (submitted = s))],
     ctx: { root: opts.root, approve: async () => true, signal: opts.signal },
     events: opts.events,
     usage: opts.usage,

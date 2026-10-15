@@ -1,4 +1,4 @@
-import type { ChatSession, Effort, ModelHandle, ToolCall, ToolResult, TurnInput, TurnResult } from "../providers/types.js";
+import type { ChatSession, Effort, ImageInput, ModelHandle, ToolCall, ToolResult, TurnInput, TurnResult } from "../providers/types.js";
 import { describeCall, ToolError, validateInput, type Tool, type ToolContext } from "../tools/index.js";
 import { clip, confine } from "../util.js";
 import type { EventSink, UsageTracker } from "./events.js";
@@ -49,6 +49,22 @@ const TOOL_ALIASES: Record<string, string> = {
   ls: "list_dir",
   list_files: "list_dir",
   list_directory: "list_dir",
+  tree: "list_dir",
+  print_tree: "list_dir",
+  directory_tree: "list_dir",
+  show_tree: "list_dir",
+  search_web: "web_search",
+  google: "web_search",
+  internet_search: "web_search",
+  fetch: "web_fetch",
+  fetch_url: "web_fetch",
+  open_url: "web_fetch",
+  browse: "web_fetch",
+  todo_write: "todo",
+  update_todos: "todo",
+  todos: "todo",
+  ask: "ask_user",
+  ask_question: "ask_user",
   read: "read_file",
   cat: "read_file",
   open_file: "read_file",
@@ -139,13 +155,13 @@ export class Agent {
   }
 
   /** Run until the model stops calling tools. Returns its final text. */
-  async run(prompt: string, signal?: AbortSignal): Promise<string> {
+  async run(prompt: string, signal?: AbortSignal, images?: ImageInput[]): Promise<string> {
     const ctx = { ...this.ctx, signal: signal ?? this.ctx.signal };
     if (this.overLimit()) await this.compact(this.takePending(), signal);
     this.requests.push(prompt);
     this.journal.add("request", prompt);
 
-    let res = await this.turn({ text: prompt, toolResults: this.takePending() }, signal);
+    let res = await this.turn({ text: prompt, toolResults: this.takePending(), images }, signal);
     let steps = 0;
     let nudges = 0;
     const maxTurns = this.opts.maxTurns ?? 200;
@@ -160,10 +176,18 @@ export class Agent {
           res = await this.turn({ text: "Your reply was cut off by the output limit. Continue exactly where you stopped." }, signal);
           continue;
         }
-        // Weaker models sometimes end a turn while announcing their next step.
-        if (nudges < 2 && announcesNextStep(res.text)) {
+        // Weaker models sometimes end a turn while announcing their next step,
+        // or with no reply at all (reasoning only).
+        if (nudges < 2 && (announcesNextStep(res.text) || (!res.text.trim() && steps > 0))) {
           nudges++;
-          res = await this.turn({ text: "You described a next step but did not take it. Do it now with your tools, or finish with a short summary if the work is complete." }, signal);
+          res = await this.turn(
+            {
+              text: res.text.trim()
+                ? "You described a next step but did not take it. Do it now with your tools, or finish with a short summary if the work is complete."
+                : "You stopped without a reply. If any part of the request is not done yet, continue with your tools. When everything is done and checked, reply with a short summary of what you changed.",
+            },
+            signal,
+          );
           continue;
         }
         return res.text;
@@ -312,6 +336,7 @@ export class Agent {
     };
     if (!tool) return fail(`Unknown tool "${call.name}". Available tools: ${this.tools.map((t) => t.spec.name).join(", ")}.`);
     if (call.parseError) return fail(`Invalid tool input: ${call.parseError}. Re-issue the call with valid JSON arguments.`);
+    call.input = normalizeArgs(tool.spec.parameters, call.input);
     const invalid = validateInput(tool.spec, call.input);
     if (invalid) return fail(invalid);
 
@@ -337,6 +362,39 @@ export class Agent {
       return fail(msg);
     }
   }
+}
+
+// Argument names other agents' tools use (Claude Code, Codex, opencode, ...).
+// Mapping them saves a failed round trip with models trained on those tools.
+const ARG_ALIASES: Record<string, string[]> = {
+  path: ["file_path", "filepath", "file", "filename", "target_file", "dir", "directory"],
+  content: ["contents", "text", "file_text", "data", "body"],
+  old_string: ["old_str", "old_text", "old", "find", "search", "original"],
+  new_string: ["new_str", "new_text", "new", "replace", "replacement", "updated"],
+  pattern: ["query", "regex", "search", "term", "q"],
+  query: ["q", "search", "term", "search_query"],
+  command: ["cmd", "script", "shell_command"],
+  url: ["link", "uri", "href"],
+};
+
+/** Copy aliased arguments onto the names a tool declares, when the declared one is missing. */
+export function normalizeArgs(parameters: object, input: Record<string, unknown>): Record<string, unknown> {
+  const props = (parameters as { properties?: Record<string, unknown> }).properties ?? {};
+  const out = { ...input };
+  for (const [name, aliases] of Object.entries(ARG_ALIASES)) {
+    if (!(name in props) || out[name] !== undefined) continue;
+    const alias = aliases.find((a) => out[a] !== undefined && !(a in props));
+    if (alias) {
+      out[name] = out[alias];
+      delete out[alias];
+    }
+  }
+  // Multi-edit items use the same names (edit_file's edits[]).
+  if ("edits" in props && Array.isArray(out.edits)) {
+    const item = { properties: { old_string: {}, new_string: {}, replace_all: {} } };
+    out.edits = out.edits.map((e: unknown) => (e && typeof e === "object" ? normalizeArgs(item, e as Record<string, unknown>) : e));
+  }
+  return out;
 }
 
 /** True when a reply ends by announcing an action instead of finishing ("Let's check the console."). */

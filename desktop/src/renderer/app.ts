@@ -59,7 +59,11 @@ const mod = navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl";
 let appState: AppState;
 let project: ProjectInfo | null = null;
 let busy = false;
-type Mode = "agent" | "swarm" | "best";
+type Mode = "agent" | "swarm" | "best" | "plan" | "review";
+/** Images pasted or dropped into the composer, sent with the next request. */
+let attachments: Array<{ mediaType: string; data: string; name: string }> = [];
+/** The live checklist the agent keeps for the current request. */
+let todoEl: HTMLElement | null = null;
 /** Options picked with / commands for the next message. No mode means SwarmCode decides. */
 let picked: { mode?: Mode; guarantee: boolean; skills: string[] } = { guarantee: false, skills: [] };
 let chipsEl: HTMLElement;
@@ -352,13 +356,32 @@ function renderWorkspace() {
     },
     onkeydown: onComposerKey,
     onblur: () => setTimeout(hidePalette, 120),
+    onpaste: (e: ClipboardEvent) => {
+      const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith("image/"));
+      if (files.length) {
+        e.preventDefault();
+        void addImages(files);
+      }
+    },
   }) as HTMLTextAreaElement;
   sendBtn = h("button", { class: "send", title: "Send (Enter)", onclick: () => (busy ? stop() : submit()) }) as HTMLButtonElement;
   chipsEl = h("div", { class: "chips" });
   paletteEl = h("div", { class: "palette", hidden: true });
   const composer = h(
     "div",
-    { class: "composer" },
+    {
+      class: "composer",
+      ondragover: (e: DragEvent) => {
+        if ([...(e.dataTransfer?.items ?? [])].some((i) => i.type.startsWith("image/"))) e.preventDefault();
+      },
+      ondrop: (e: DragEvent) => {
+        const files = [...(e.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith("image/"));
+        if (files.length) {
+          e.preventDefault();
+          void addImages(files);
+        }
+      },
+    },
     h(
       "div",
       { class: "col" },
@@ -559,18 +582,63 @@ function endStream() {
 }
 
 async function submit() {
-  const text = inputEl.value.trim();
-  if (!text || busy || !project) return;
+  const typed = inputEl.value.trim();
   const { mode, guarantee, skills: chosen } = picked;
+  // Review needs no text: it reviews the working tree (text is an optional focus).
+  if ((!typed && mode !== "review") || busy || !project) return;
+  const images = attachments.map(({ mediaType, data }) => ({ mediaType, data }));
+  const text = typed || "Review my uncommitted changes";
   picked = { guarantee: false, skills: [] };
+  attachments = [];
+  todoEl = null;
   renderChips();
   hidePalette();
   inputEl.value = "";
   autosize();
-  addUser(text);
+  addUser(images.length ? `${text}\n\n(${images.length} image${images.length > 1 ? "s" : ""} attached)` : text);
   setBusy(true);
   try {
-    if (mode === "best" || mode === "swarm") {
+    if (mode === "review") {
+      showThinking();
+      const r = await api.review(typed || undefined);
+      hideThinking();
+      append(
+        card(
+          r.approved ? "shieldCheck" : "alert",
+          r.approved ? "No material problems found" : "Review found issues",
+          r.scope,
+          h("div", { class: "md", html: renderMarkdown(r.feedback.replace(/^\**LGTM\**\s*/i, "")) }),
+        ),
+      );
+    } else if (mode === "plan") {
+      showThinking();
+      await api.send(text, chosen.length ? chosen : undefined, guarantee, { plan: true, images });
+      endStream();
+      const c = card("list", "Plan ready", "Nothing has changed yet. Review the plan above, then implement it or refine it.");
+      c.classList.add("attention");
+      c.append(
+        h(
+          "div",
+          { class: "card-actions" },
+          h("button", { class: "btn ghost", onclick: () => (c.remove(), inputEl.focus()), text: "Refine first" }),
+          h(
+            "button",
+            {
+              class: "btn primary",
+              onclick: () => {
+                c.remove();
+                inputEl.value = "Implement the plan above. Follow it, adjust if you find something it missed, and verify the result.";
+                picked.mode = "agent";
+                void submit();
+              },
+            },
+            icon("check"),
+            "Implement this plan",
+          ),
+        ),
+      );
+      append(c);
+    } else if (mode === "best" || mode === "swarm") {
       tasks = [];
       plan = null;
       feeds.clear();
@@ -578,9 +646,10 @@ async function submit() {
       showThinking();
       const r = mode === "best" ? await api.bestOf(text, 3, guarantee) : await api.swarm(text, guarantee);
       if (!r.applied && r.branch) addStatus(`Result kept on branch ${r.branch}.`);
-    } else if (mode === "agent") {
+    } else if (mode === "agent" || images.length) {
+      // Images go to the single agent (autopilot's parallel modes don't take them).
       showThinking();
-      await api.send(text, chosen.length ? chosen : undefined, guarantee);
+      await api.send(text, chosen.length ? chosen : undefined, guarantee, { images });
       endStream();
     } else {
       // No mode picked: SwarmCode decides, and asks before using several agents.
@@ -645,10 +714,12 @@ function commands(): Command[] {
   const repo = Boolean(project?.isRepo);
   const out: Command[] = [
     { id: "agent", kind: "mode", label: "agent", hint: "Use a single agent for this request", icon: "sparkle" },
+    { id: "plan", kind: "mode", label: "plan", hint: "Investigate read-only and propose a plan; nothing changes until you approve", icon: "list" },
     ...(repo
       ? [
           { id: "swarm", kind: "mode", label: "swarm", hint: "Plan it and build it with parallel agents", icon: "agents" } as Command,
           { id: "best", kind: "mode", label: "best", hint: "Three independent attempts; the best verified one wins", icon: "layers" } as Command,
+          { id: "review", kind: "mode", label: "review", hint: "Review your uncommitted changes for real problems (text = what to focus on)", icon: "search" } as Command,
         ]
       : []),
     { id: "guarantee", kind: "flag", label: "guarantee", hint: "Hidden acceptance tests decide when the work is done", icon: "shieldCheck" },
@@ -731,14 +802,42 @@ function choose(c: Command) {
   inputEl.focus();
 }
 
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+
+/** Attach pasted or dropped images (up to 5, 5 MB each) to the next request. */
+async function addImages(files: File[]) {
+  for (const f of files) {
+    if (attachments.length >= 5) return toast("Up to 5 images per request.", true);
+    if (!IMAGE_TYPES.includes(f.type)) {
+      toast(`${f.name || "That image"} isn't PNG, JPEG, GIF or WebP.`, true);
+      continue;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      toast(`${f.name || "That image"} is over 5 MB.`, true);
+      continue;
+    }
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    attachments.push({ mediaType: f.type, data: btoa(bin), name: f.name || `image ${attachments.length + 1}` });
+  }
+  renderChips();
+  inputEl.focus();
+}
+
 function renderChips() {
   if (!chipsEl) return;
   const chip = (label: string, ic: string, remove: () => void, cls = "") =>
     h("span", { class: `chip-token ${cls}` }, icon(ic), label, h("button", { class: "chip-x", title: "Remove", onclick: () => (remove(), renderChips(), inputEl.focus()), html: svg("x") }));
   const parts: HTMLElement[] = [];
-  if (picked.mode) parts.push(chip(picked.mode === "best" ? "best of 3" : picked.mode, picked.mode === "agent" ? "sparkle" : picked.mode === "swarm" ? "agents" : "layers", () => (picked.mode = undefined), "mode"));
+  const modeIcon: Record<Mode, string> = { agent: "sparkle", swarm: "agents", best: "layers", plan: "list", review: "search" };
+  if (picked.mode) parts.push(chip(picked.mode === "best" ? "best of 3" : picked.mode, modeIcon[picked.mode], () => (picked.mode = undefined), "mode"));
   if (picked.guarantee) parts.push(chip("guarantee", "shieldCheck", () => (picked.guarantee = false), "good"));
   for (const s of picked.skills) parts.push(chip(s, skillIcon(s), () => (picked.skills = picked.skills.filter((x) => x !== s))));
+  for (const a of attachments) {
+    const thumb = h("img", { class: "chip-thumb", src: `data:${a.mediaType};base64,${a.data}`, alt: "" });
+    parts.push(h("span", { class: "chip-token image" }, thumb, a.name, h("button", { class: "chip-x", title: "Remove", onclick: () => ((attachments = attachments.filter((x) => x !== a)), renderChips(), inputEl.focus()), html: svg("x") })));
+  }
   chipsEl.replaceChildren(...parts);
   chipsEl.hidden = !parts.length;
 }
@@ -841,6 +940,8 @@ function onEvent(e: AgentEvent) {
         return addStatus(`Context compacted: ${Math.round(e.before / 1000)}k → ${Math.round(e.after / 1000)}k tokens`);
       case "status":
         return addStatus(e.message);
+      case "todos":
+        return renderTodos(e.items);
     }
     return;
   }
@@ -859,6 +960,22 @@ function onEvent(e: AgentEvent) {
     feeds.set(e.agent, f);
     renderPanelSoon();
   }
+}
+
+/** One live checklist per request, updated in place as the agent works through it. */
+function renderTodos(items: Array<{ text: string; status: "pending" | "in_progress" | "done" }>) {
+  endStream();
+  const done = items.filter((i) => i.status === "done").length;
+  const list = h(
+    "div",
+    { class: "todo-list" },
+    ...items.map((i) => h("div", { class: `todo ${i.status}` }, h("span", { class: "todo-mark", html: i.status === "done" ? svg("check") : "" }), h("span", { text: i.text }))),
+  );
+  const fresh = card("list", "Checklist", `${done} of ${items.length} done`, list);
+  fresh.classList.add("todos");
+  if (todoEl?.isConnected) todoEl.replaceWith(fresh);
+  else append(fresh);
+  todoEl = fresh;
 }
 
 function onRequest(r: UserRequest) {
@@ -940,6 +1057,27 @@ function onRequest(r: UserRequest) {
       ),
     );
     append(c);
+  } else if (r.kind === "question") {
+    const c = card("help", "A quick question", null, h("div", { class: "question", text: r.question }));
+    c.classList.add("attention");
+    const reply = (text: string) => {
+      void api.answer(r.id, { allow: true, text });
+      settle(c, text ? `Answered: ${text.slice(0, 120)}` : "Skipped the question", Boolean(text));
+      if (busy) showThinking();
+    };
+    const field = h("input", {
+      class: "answer-input",
+      placeholder: "Type an answer, then Enter",
+      onkeydown: (e: KeyboardEvent) => {
+        if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) reply((e.target as HTMLInputElement).value.trim());
+      },
+    }) as HTMLInputElement;
+    if (r.options.length) c.append(h("div", { class: "card-actions answer-options" }, ...r.options.map((o) => h("button", { class: "btn", onclick: () => reply(o), text: o }))));
+    c.append(
+      h("div", { class: "card-actions" }, field, h("button", { class: "btn ghost", onclick: () => reply(""), text: "Skip" }), h("button", { class: "btn primary", onclick: () => field.value.trim() && reply(field.value.trim()) }, icon("check"), "Send")),
+    );
+    append(c);
+    field.focus();
   } else if (r.kind === "mode") {
     const label: Record<string, [string, string]> = { agent: ["sparkle", "Single agent"], swarm: ["agents", "Parallel agents"], best: ["layers", "Best of 3"] };
     const fmtTime = (s: number) => (s >= 60 ? `~${Math.round(s / 60)} min` : `~${s}s`);

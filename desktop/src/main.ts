@@ -7,7 +7,7 @@ import { BUILTIN_PROVIDERS, clearModelCache, GLOBAL_CONFIG, loadConfig, SWARMCOD
 import { Engine } from "../../src/engine.js";
 import { VERSION } from "../../src/version.js";
 import { githubFinish, githubStart, googleSignIn, type Account, type OAuthConfig } from "./auth.js";
-import type { AppState, NewRequest, ProjectInfo, ProviderStatus, Push, RequestAnswer, Settings, UserRequest } from "./shared.js";
+import type { AppState, ImageAttachment, NewRequest, ProjectInfo, ProviderStatus, Push, RequestAnswer, SendOptions, Settings, UserRequest } from "./shared.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const HOME_DIR = SWARMCODE_HOME;
@@ -148,6 +148,19 @@ function ask(request: NewRequest): Promise<RequestAnswer> {
   });
 }
 
+const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+
+/** Images from the renderer: known types, base64 only, at most 5 of up to 5 MB each. */
+function validImages(images: unknown): ImageAttachment[] | undefined {
+  if (!Array.isArray(images)) return undefined;
+  const ok = images
+    .filter((i): i is ImageAttachment => typeof i?.mediaType === "string" && typeof i?.data === "string")
+    .filter((i) => IMAGE_TYPES.has(i.mediaType) && /^[A-Za-z0-9+/=]+$/.test(i.data) && i.data.length <= 7_000_000)
+    .slice(0, 5)
+    .map((i) => ({ mediaType: i.mediaType, data: i.data }));
+  return ok.length ? ok : undefined;
+}
+
 async function openEngine(root: string): Promise<ProjectInfo> {
   if (engine?.busy) throw new Error("Stop the running agent before switching projects.");
   await engine?.close();
@@ -179,6 +192,10 @@ async function openEngine(root: string): Promise<ProjectInfo> {
     },
     showResult: (report, diff) => push({ type: "result", report, diff }),
     confirmApply: async (report, diff) => (await ask({ kind: "apply", report, diff })).allow,
+    ask: async (question, options) => {
+      const a = await ask({ kind: "question", question, options });
+      return a.allow ? (a.text ?? "") : "";
+    },
   });
   engine = e;
   remember(e.root);
@@ -226,10 +243,16 @@ function registerIpc() {
 
   ipcMain.handle("health", (_e, runTests: boolean) => need().health({ runTests }));
 
-  ipcMain.handle("send", async (_e, prompt: string, skills?: string[], guarantee?: boolean) => {
-    const text = await need().send(prompt, { skills, guarantee });
+  ipcMain.handle("send", async (_e, prompt: string, skills?: string[], guarantee?: boolean, opts?: SendOptions) => {
+    const text = await need().send(prompt, { skills, guarantee, plan: opts?.plan === true, images: validImages(opts?.images) });
     pushUsage();
     return { text };
+  });
+
+  ipcMain.handle("review", async (_e, focus?: string) => {
+    const r = await need().review({ focus: typeof focus === "string" && focus.trim() ? focus.slice(0, 2000) : undefined });
+    pushUsage();
+    return { approved: r.approved, feedback: r.feedback, scope: r.scope };
   });
 
   ipcMain.handle("swarm", async (_e, goal: string, guarantee?: boolean) => {

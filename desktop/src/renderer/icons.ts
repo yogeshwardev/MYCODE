@@ -14,6 +14,8 @@ const P: Record<string, string> = {
   file: '<path d="M13.5 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M13.5 3.5V9H19"/>',
   pencil: '<path d="M4.5 19.5h4l10-10a2.1 2.1 0 0 0-4-4l-10 10z"/>',
   search: '<circle cx="11" cy="11" r="6"/><path d="m19.5 19.5-4-4"/>',
+  image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4.5 3.5"/>',
+  help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6"/><circle cx="12" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 2.5 14.4 0 17M12 3.5c-2.5 2.6-2.5 14.4 0 17"/>',
   shield: '<path d="M12 3.5 5 6.5v5.2c0 4.3 2.9 7.3 7 8.8 4.1-1.5 7-4.5 7-8.8V6.5z"/>',
   agents: '<path d="M5.5 5.5c4 0 5 6.5 11 6.5M5.5 12h11M5.5 18.5c4 0 5-6.5 11-6.5"/><circle cx="5" cy="5.5" r="1.8"/><circle cx="5" cy="12" r="1.8"/><circle cx="5" cy="18.5" r="1.8"/><circle cx="18" cy="12" r="2.4"/>',

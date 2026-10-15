@@ -9,7 +9,8 @@ export type AgentEvent =
   | { type: "tool_error"; agent: string; name: string; error: string }
   | { type: "status"; agent: string; message: string }
   | { type: "compacted"; agent: string; before: number; after: number }
-  | { type: "trimmed"; agent: string; before: number; after: number };
+  | { type: "trimmed"; agent: string; before: number; after: number }
+  | { type: "todos"; agent: string; items: Array<{ text: string; status: "pending" | "in_progress" | "done" }> };
 
 export type EventSink = (e: AgentEvent) => void;
 

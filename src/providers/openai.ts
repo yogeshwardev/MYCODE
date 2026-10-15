@@ -118,7 +118,15 @@ class OpenAISession implements ChatSession {
     for (const r of input.toolResults ?? []) {
       this.messages.push({ role: "tool", tool_call_id: r.id, content: r.isError ? `ERROR: ${r.content}` : r.content });
     }
-    if (input.text) this.messages.push({ role: "user", content: input.text });
+    if (input.images?.length) {
+      this.messages.push({
+        role: "user",
+        content: [
+          ...(input.text ? [{ type: "text" as const, text: input.text }] : []),
+          ...input.images.map((img) => ({ type: "image_url" as const, image_url: { url: `data:${img.mediaType};base64,${img.data}` } })),
+        ],
+      });
+    } else if (input.text) this.messages.push({ role: "user", content: input.text });
 
     let stream: Awaited<ReturnType<typeof this.request>>;
     try {

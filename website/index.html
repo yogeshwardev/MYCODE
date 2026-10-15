@@ -168,7 +168,7 @@
             </article>
             <article class="tile wide">
               <h3>Long sessions without amnesia</h3>
-              <p>Every agent keeps a searchable journal, so it can recall file contents and decisions even after its context is compacted. Huge logs are kept out of context and read on demand, which cuts token use.</p>
+              <p>Every agent keeps a searchable journal, so it can recall file contents and decisions even after its context is compacted. Old tool output is trimmed as work goes on and huge logs are read on demand, so long tasks stay lean: one benchmark task dropped from 2.2M to 0.6M tokens.</p>
             </article>
             <article class="tile">
               <h3>Time travel</h3>
@@ -182,7 +182,16 @@
               <h3>Browser, PDFs and documents</h3>
               <p>Agents test your web app in a real browser, read PDFs and Word files, and produce polished PDF reports.</p>
             </article>
+            <article class="tile wide">
+              <h3>Guardrails that hold, even on autopilot</h3>
+              <p>Force pushes, history rewrites, wiping folders, dropping databases and piping downloads into a shell always need a person, and every agent, including parallel workers, follows your allow and deny rules. A cloned repo can't approve its own commands.</p>
+            </article>
+            <article class="tile">
+              <h3>Plan first, then build</h3>
+              <p>Plan mode investigates read-only and proposes the change. Nothing is touched until you approve.</p>
+            </article>
           </div>
+          <p class="parity"><b>Plus everything you expect:</b> code review command for CI, hooks for formatters and linters, permission rules, web search, screenshots and images, @file mentions, a live checklist, clarifying questions, MCP servers, AGENTS.md and CLAUDE.md support, session resume and JSON output.</p>
         </div>
       </section>
 

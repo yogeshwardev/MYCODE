@@ -13,16 +13,18 @@ permissions:
 jobs:
   npm:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
       - run: npm ci
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Skipped until an NPM_TOKEN secret is added to the repository.
+      - if: env.NODE_AUTH_TOKEN != ''
+        run: npm publish --provenance --access public
 
   desktop:
     runs-on: ${{ matrix.os }}
@@ -30,15 +32,23 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm ci
       - run: npm ci
         working-directory: desktop
-      - run: npm run dist
+      - name: Build installers
         working-directory: desktop
+        shell: bash
+        # Unset signing variables whose secrets are missing: electron-builder
+        # treats an empty CSC_LINK as a file path and fails.
+        run: |
+          for v in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!v}" ]; then unset "$v"; fi
+          done
+          npm run dist
         env:
           # Code signing: set these secrets to produce signed builds.
           CSC_LINK: ${{ secrets.CSC_LINK }}

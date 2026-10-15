@@ -114,6 +114,15 @@ export class Renderer {
       case "compacted":
         this.line(c.yellow(`${mine ? "" : tag(e.agent) + " "}↺ context compacted: ${fmtK(e.before)} → ${fmtK(e.after)} tokens`));
         return;
+      case "trimmed":
+        if (!this.quiet) this.line(c.gray(`  ↺ older tool output trimmed: ${fmtK(e.before)} → ${fmtK(e.after)} tokens`));
+        return;
+      case "todos": {
+        if (this.quiet) return;
+        const mark = { pending: c.gray("○"), in_progress: c.yellow("◐"), done: c.green("●") } as const;
+        this.line(e.items.map((i) => `  ${mark[i.status]} ${i.status === "done" ? c.gray(i.text) : i.text}`).join("\n"));
+        return;
+      }
     }
   };
 }

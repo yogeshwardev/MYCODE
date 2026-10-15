@@ -425,3 +425,24 @@ body.os-win32 .titlebar, body.os-linux .titlebar { padding-right: 148px; }
 .modal.narrow { width: min(440px, 100%); }
 .modal-body.center { text-align: center; padding-top: 18px; }
 .device-code { font-family: var(--mono); font-size: 32px; letter-spacing: 0.18em; font-weight: 600; color: #fff; margin: 14px 0 18px; user-select: all; }
+
+/* Image attachments */
+.chip-token.image { padding-left: 3px; font-family: var(--sans); max-width: 220px; }
+.chip-thumb { width: 18px; height: 18px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border-2); }
+
+/* Clarifying questions */
+.card .question { font-size: 14px; color: var(--text); line-height: 1.5; }
+.answer-options { justify-content: flex-start; flex-wrap: wrap; border-top: 0; padding-bottom: 0; }
+.answer-input { flex: 1; min-width: 0; height: 32px; padding: 0 10px; border-radius: var(--radius-s); border: 1px solid var(--border-2); background: var(--surface-2); color: var(--text); font: 13px var(--sans); outline: none; }
+.answer-input:focus { border-color: var(--border-3); box-shadow: 0 0 0 3px var(--ring); }
+
+/* Live checklist */
+.card.todos .card-body { padding-top: 6px; }
+.todo-list { display: grid; gap: 6px; }
+.todo { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.todo-mark { flex: none; width: 15px; height: 15px; margin-top: 2px; border-radius: 4px; border: 1px solid var(--border-3); display: grid; place-items: center; }
+.todo-mark .icon, .todo-mark svg { width: 11px; height: 11px; }
+.todo.in_progress { color: var(--text); }
+.todo.in_progress .todo-mark { border-color: var(--warn); box-shadow: inset 0 0 0 3px var(--surface-1), inset 0 0 0 8px var(--warn); }
+.todo.done { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-4); }
+.todo.done .todo-mark { border-color: var(--ok); background: var(--ok); color: var(--accent-ink); }

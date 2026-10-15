@@ -1,6 +1,33 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
+
+New
+- **Plan mode** (`swarm plan`, `--plan`, `/plan` in the app): the agent investigates read-only and proposes a plan; nothing changes until you approve it.
+- **`swarm review`** (`/review` in the app): reviews uncommitted changes, a branch (`--base main`) or a commit (`--commit`), never edits, and exits with code 2 when it finds issues, so it can gate CI.
+- **Permission rules** (`rules.allow` / `rules.deny`, e.g. `"bash:npm test*"`, `"write:src/**"`). Deny rules come from any config; allow rules only from your global config, so a cloned repo can't pre-approve its own commands.
+- **Destructive-command guard**: force pushes, `git reset --hard`, recursive deletes of root/home, disk formatting, dropping databases and piping downloads into a shell always need a person, even in auto mode, and the approval prompt says why.
+- **Hooks**: `hooks.afterEdit` runs commands (formatters, linters) on each file the agent writes; failures go back to the agent.
+- **Web search** (`web_search`): Brave or Tavily with an API key, DuckDuckGo otherwise.
+- **Images**: `--image` in the CLI, paste or drop screenshots in the app.
+- **`@file` mentions** attach files to a request.
+- **Checklist** (`todo`) for multi-step work, shown live in the terminal and the app.
+- **Clarifying questions** (`ask_user`): the agent can ask one short question with suggested answers instead of guessing.
+- `swarm init --agents` writes an AGENTS.md for the project.
+
+Better
+- Much lower token use on long tasks: older tool output is trimmed from context in batches (recall still finds it), and `contextBudget` (default 160k) caps the working context even on 1M-token models. One benchmark task went from 2.18M to 0.59M tokens.
+- Works better with any model: common tool and argument names from other agents (`file_path`, `old_str`, `query`, `print_tree`, ...) are understood, no-op edits no longer count as errors, and an agent that stops without replying or mid-step is told to continue.
+- Strongly matching skills are included automatically; skill triggers cover more everyday requests.
+- Browser tools: type by field label, and clicks by text prefer buttons and links.
+- Smaller, faster desktop app: installer 125 MB to 101 MB, minified bundles, startup about 1 s.
+
+Fixed
+- Parallel workers, merge and fix agents, and best-of candidates now follow deny rules and the destructive-command guard (they approved everything before).
+- A folder inside a git repo at your home directory is treated as its own project everywhere (`init` wrote to `~`, `clean` touched the home repo); paths are compared as real paths on Windows.
+- CI: Node 22+ is required (the PDF library needs it); release builds no longer fail when signing secrets are absent.
+
+## 1.0.0
 
 - Desktop: a clean composer. SwarmCode picks skills and the mode itself and asks before using several agents. A `/` command palette chooses modes, `/guarantee` and skills, shown as removable chips.
 - Desktop: sign in with GitHub (device flow) or Google (PKCE loopback), with the account in the sidebar and settings; optional, and configured by client IDs.

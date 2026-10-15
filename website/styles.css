@@ -300,3 +300,6 @@ h2 { font-size: clamp(30px, 4.2vw, 46px); line-height: 1.1; letter-spacing: -0.0
   .footer-grid, .footer-links { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
 }
+
+.parity { margin: 22px 0 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); font-size: 15px; background: var(--bg-1); }
+.parity b { color: var(--text); font-weight: 500; }

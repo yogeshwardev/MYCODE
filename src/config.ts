@@ -4,6 +4,7 @@ import path from "node:path";
 import { anthropicModel } from "./providers/anthropic.js";
 import { openaiModel } from "./providers/openai.js";
 import type { McpServerConfig } from "./mcp.js";
+import type { PermissionRules } from "./policy.js";
 import type { Effort, ModelHandle } from "./providers/types.js";
 
 export type Role = "main" | "planner" | "worker" | "explorer";
@@ -25,6 +26,18 @@ export interface SwarmCodeConfig {
   verifyCommand?: string;
   /** "ask" prompts before edits/commands in interactive mode; "auto" never asks. */
   permission: "ask" | "auto";
+  /**
+   * Allow/deny rules such as "bash:npm test*" or "write:src/**" (see policy.ts).
+   * Deny rules come from every config layer; allow rules only from the global
+   * config, so a cloned repository cannot pre-approve its own commands.
+   */
+  rules: PermissionRules;
+  /**
+   * Shell commands run at points in the agent's work. "afterEdit" runs after
+   * each file write ({file} is replaced with its path), e.g. a formatter or
+   * linter; failures are shown to the agent. Hooks go through normal approval.
+   */
+  hooks: { afterEdit?: string[] };
   /** Fraction of the context window at which an agent compacts its history. */
   compactAt: number;
   /**
@@ -110,6 +123,8 @@ export function defaultConfig(): SwarmCodeConfig {
     contextWindows: {},
     maxParallel: 4,
     permission: "ask",
+    rules: {},
+    hooks: {},
     compactAt: 0.8,
     contextBudget: 160_000,
     maxTurns: 200,
@@ -143,13 +158,17 @@ function readJson(file: string): Partial<SwarmCodeConfig> {
 /** Defaults <- ~/.swarmcode/config.json <- <project>/.swarmcode/config.json. */
 export function loadConfig(root: string): SwarmCodeConfig {
   const cfg = defaultConfig();
-  for (const layer of [readJson(GLOBAL_CONFIG), readJson(projectConfigPath(root))]) {
+  const globalLayer = readJson(GLOBAL_CONFIG);
+  for (const layer of [globalLayer, readJson(projectConfigPath(root))]) {
     if (layer.models) cfg.models = { ...cfg.models, ...layer.models };
     if (layer.effort) cfg.effort = { ...cfg.effort, ...layer.effort };
     if (layer.providers) cfg.providers = { ...cfg.providers, ...layer.providers };
     if (layer.contextWindows) cfg.contextWindows = { ...cfg.contextWindows, ...layer.contextWindows };
     if (layer.mcpServers) cfg.mcpServers = { ...cfg.mcpServers, ...layer.mcpServers };
     if (layer.prices) cfg.prices = { ...cfg.prices, ...layer.prices };
+    if (layer.rules?.deny) cfg.rules.deny = [...(cfg.rules.deny ?? []), ...layer.rules.deny];
+    if (layer.rules?.allow && layer === globalLayer) cfg.rules.allow = [...(cfg.rules.allow ?? []), ...layer.rules.allow];
+    if (layer.hooks?.afterEdit) cfg.hooks.afterEdit = layer.hooks.afterEdit;
     for (const key of ["maxParallel", "verifyCommand", "permission", "compactAt", "contextBudget", "maxTurns", "budgetUsd", "review", "securityGate", "bestOfModels", "audit", "hiddenTests", "councilModels", "trustedSkillKeys", "requireSignedSkills"] as const) {
       if (layer[key] !== undefined) (cfg as unknown as Record<string, unknown>)[key] = layer[key];
     }

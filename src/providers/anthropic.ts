@@ -98,6 +98,9 @@ class AnthropicSession implements ChatSession {
     for (const r of input.toolResults ?? []) {
       content.push({ type: "tool_result", tool_use_id: r.id, content: r.content, is_error: r.isError || undefined });
     }
+    for (const img of input.images ?? []) {
+      content.push({ type: "image", source: { type: "base64", media_type: img.mediaType as "image/png", data: img.data } });
+    }
     if (input.text) content.push({ type: "text", text: input.text });
     this.messages.push({ role: "user", content });
 

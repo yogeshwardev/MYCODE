@@ -13,7 +13,7 @@ export type AuditRecord =
   | { type: "request"; mode: string; prompt: string }
   | { type: "checkpoint"; commit: string }
   | { type: "event"; event: AgentEvent }
-  | { type: "approval"; kind: string; summary: string; allowed: boolean }
+  | { type: "approval"; kind: string; summary: string; allowed: boolean; reason?: string }
   | { type: "result"; mode: string; summary: string }
   | { type: "usage"; usage: unknown }
   | { type: "error"; message: string };

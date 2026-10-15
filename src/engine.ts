@@ -13,6 +13,7 @@ import { healthCheck, type HealthReport } from "./quality/health.js";
 import { makeDelegateTool } from "./agent/subagents.js";
 import { loadConfig, resolveModel, type SwarmCodeConfig } from "./config.js";
 import { connectMcp, type McpConnection } from "./mcp.js";
+import { decide } from "./policy.js";
 import { buildRepoMap, loadProjectInstructions } from "./repo/repomap.js";
 import { listSessions, loadSession, newSessionId, saveSession, type SavedSession } from "./sessions.js";
 import { loadSkills, makeSkillTool, rankSkills, skillIndex, STRONG_SKILL_MATCH, type Skill } from "./skills.js";
@@ -21,10 +22,12 @@ import { runSwarm, type SwarmResult, type TaskState } from "./swarm/orchestrator
 import { runBestOf, type BestOfResult } from "./swarm/tournament.js";
 import { closeBrowsers } from "./tools/browser.js";
 import { makeRememberTool } from "./tools/memory.js";
+import { makeTodoTool } from "./tools/todo.js";
 import { stopProcesses } from "./tools/processes.js";
 import type { Plan } from "./swarm/planner.js";
 import { CORE_TOOLS, ToolError, type ApprovalKind, type Tool } from "./tools/index.js";
-import { clip, runShell } from "./util.js";
+import { clip, confine, run, runShell } from "./util.js";
+import type { ImageInput } from "./providers/types.js";
 
 const MAX_VERIFY_ROUNDS = 2;
 /** In "auto" review mode, changes smaller than this many lines skip the review. */
@@ -51,6 +54,12 @@ export interface EngineHooks {
    * user choose. Resolve with the mode to run. Not called in "auto" permission mode.
    */
   chooseMode?: (forecast: Forecast) => Promise<Mode>;
+  /**
+   * The agent asks the user a clarifying question (optionally with suggested
+   * answers). Resolve with the answer. Without this hook, or in "auto" mode,
+   * the agent is told to make a reasonable assumption and say so.
+   */
+  ask?: (question: string, options: string[]) => Promise<string>;
 }
 
 export interface EngineOptions {
@@ -64,6 +73,41 @@ export interface EngineOptions {
   noApply?: boolean;
 }
 
+const PLAN_PROMPT = `[Plan mode] Investigate and propose; do not change anything. You can read files, search, and run read-only commands (git log/diff, ls); edits and other commands are blocked. Reply with:
+1. What you found that matters (files, functions, constraints).
+2. The plan: numbered steps, each naming the files to change and how.
+3. Risks, open questions and how you would verify the result.
+The user will review the plan, then ask you to implement it.`;
+
+/** Max bytes of a file attached with @path. */
+const MENTION_MAX_BYTES = 60_000;
+
+/**
+ * Files mentioned as @path in a request, appended so the agent has them up
+ * front (at most 5 files; paths must be inside the project).
+ */
+export function attachMentions(prompt: string, root: string): string {
+  const seen = new Set<string>();
+  const parts: string[] = [];
+  for (const m of prompt.matchAll(/(?:^|\s)@([\w./\\-]+[\w/\\-])/g)) {
+    if (parts.length >= 5) break;
+    const rel = m[1];
+    let file: string;
+    try {
+      file = confine(root, rel);
+    } catch {
+      continue;
+    }
+    if (seen.has(file) || !fs.existsSync(file) || !fs.statSync(file).isFile()) continue;
+    seen.add(file);
+    const buf = fs.readFileSync(file);
+    if (buf.includes(0)) continue; // binary
+    const text = buf.subarray(0, MENTION_MAX_BYTES).toString("utf8");
+    parts.push(`<file path="${rel.replace(/\\/g, "/")}"${buf.length > MENTION_MAX_BYTES ? ' truncated="true"' : ""}>\n${text}\n</file>`);
+  }
+  return parts.length ? `\n\n[Files the user mentioned:]\n${parts.join("\n")}` : "";
+}
+
 export class Engine {
   readonly usage: UsageTracker;
   sessionId = newSessionId();
@@ -71,6 +115,8 @@ export class Engine {
   private agentInstance?: Agent;
   private controller?: AbortController;
   private always = new Set<ApprovalKind>();
+  /** Set while a plan-mode request runs: only reading and read-only commands are allowed. */
+  private planMode = false;
   /** Whether the main agent changed files during the current request. */
   private edited = false;
   /** Original contents (null = did not exist) of files changed in the current request. */
@@ -146,10 +192,10 @@ export class Engine {
    *   verify command → independent review → security gate → hidden acceptance tests.
    * Every request that changes files produces a proof report.
    */
-  async send(prompt: string, opts: { skills?: string[]; guarantee?: boolean } = {}): Promise<string> {
+  async send(prompt: string, opts: { skills?: string[]; guarantee?: boolean; plan?: boolean; images?: ImageInput[] } = {}): Promise<string> {
     const agent = await this.agent();
     const status = (message: string) => this.hooks.events({ type: "status", agent: "swarm", message });
-    let fullPrompt = prompt;
+    let fullPrompt = prompt + attachMentions(prompt, this.root);
     for (const name of opts.skills ?? []) {
       const skill = this.skills.find((s) => s.name === name);
       if (!skill) throw new Error(`Unknown skill "${name}". Available: ${this.skills.map((s) => s.name).join(", ")}`);
@@ -187,7 +233,19 @@ export class Engine {
           else status(`Hidden acceptance tests ready (${suite.files.length} file(s))${suite.failedBefore ? "" : "; note: they already pass on the current code"}.`);
         }
 
-        text = await agent.run(fullPrompt, signal);
+        if (opts.plan) {
+          // Plan mode: investigate with read-only tools and propose; nothing changes.
+          this.planMode = true;
+          try {
+            text = await agent.run(`${PLAN_PROMPT}\n\n${fullPrompt}`, signal, opts.images);
+          } finally {
+            this.planMode = false;
+          }
+          this.audit?.record({ type: "result", mode: "plan", summary: text });
+          return text;
+        }
+
+        text = await agent.run(fullPrompt, signal, opts.images);
         let verify = await this.verifyLoop(agent, signal, status);
         text = verify.text ?? text;
 
@@ -601,9 +659,34 @@ export class Engine {
   }
 
   private approve = async (kind: ApprovalKind, summary: string): Promise<boolean> => {
-    const allowed = this.cfg.permission === "auto" || this.always.has(kind) ? true : await this.hooks.approve(kind, summary);
+    const auto = this.cfg.permission === "auto" || this.always.has(kind);
+    const { decision, reason } = decide(kind, summary, { rules: this.cfg.rules, auto, planMode: this.planMode });
+    let allowed: boolean;
+    if (decision === "deny") {
+      this.audit?.record({ type: "approval", kind, summary, allowed: false, reason });
+      throw new ToolError(`Not allowed: ${reason}.`);
+    } else if (decision === "allow") {
+      allowed = true;
+    } else {
+      // Destructive commands are flagged so the person knows what they approve.
+      allowed = await this.hooks.approve(kind, reason && kind === "bash" ? `${summary}\n⚠ ${reason}` : summary);
+    }
     this.audit?.record({ type: "approval", kind, summary, allowed });
     return allowed;
+  };
+
+  /** Run after-edit hooks on a written file; report failures to the agent. */
+  private afterWrite = async (file: string): Promise<string | undefined> => {
+    const commands = this.cfg.hooks.afterEdit ?? [];
+    const notes: string[] = [];
+    for (const template of commands) {
+      const rel = path.relative(this.root, file).replace(/\\/g, "/");
+      const command = template.replace(/\{file\}/g, JSON.stringify(rel));
+      if (!(await this.approve("bash", command))) continue;
+      const res = await runShell(command, this.root, 60_000);
+      if (res.code !== 0) notes.push(`After-edit hook \`${command}\` failed (exit ${res.code}):\n${clip((res.stdout + res.stderr).trim(), 2000)}`);
+    }
+    return notes.length ? notes.join("\n\n") : undefined;
   };
 
   /** Front ends call this when the user picks "always allow" for a kind. */
@@ -688,6 +771,8 @@ export class Engine {
       }),
     ];
     tools.push(makeRememberTool());
+    tools.push(makeTodoTool((items) => hooks.events({ type: "todos", agent: "swarm", items })));
+    tools.push(this.askTool());
     if (this.skills.length) tools.push(makeSkillTool(this.skills));
     if (this.isRepo) tools.push(this.swarmTool());
     return new Agent({
@@ -696,13 +781,79 @@ export class Engine {
       effort: cfg.effort.main,
       system: mainSystemPrompt(root, map, loadProjectInstructions(root), this.isRepo, skillIndex(this.skills)),
       tools,
-      ctx: { root, approve: this.approve, checkpoint: this.checkpoint },
+      ctx: { root, approve: this.approve, checkpoint: this.checkpoint, afterWrite: this.afterWrite },
       events: hooks.events,
       usage,
       maxTurns: cfg.maxTurns,
       compactAt: cfg.compactAt,
       contextBudget: cfg.contextBudget,
     });
+  }
+
+  /**
+   * Review code without changing it: uncommitted changes (default), a branch
+   * against its base, or a single commit. Untracked files count as changes.
+   */
+  async review(opts: { base?: string; commit?: string; focus?: string } = {}): Promise<{ approved: boolean; feedback: string; scope: string; diffLines: number }> {
+    if (!this.isRepo) throw new Error("Review needs a git repository.");
+    const valid = (ref: string) => /^[\w./~^@{}-]+$/.test(ref) && !ref.startsWith("-");
+    let diff: string;
+    let scope: string;
+    let request = "Review this change for real problems before it ships.";
+    if (opts.commit) {
+      if (!valid(opts.commit)) throw new Error(`Invalid commit: ${opts.commit}`);
+      diff = (await git(this.root, ["show", "--format=%B", opts.commit])).stdout;
+      scope = `commit ${opts.commit}`;
+      request += " The commit message describes what it is supposed to do.";
+    } else if (opts.base) {
+      if (!valid(opts.base)) throw new Error(`Invalid base: ${opts.base}`);
+      diff = (await git(this.root, ["diff", `${opts.base}...HEAD`])).stdout;
+      const log = (await git(this.root, ["log", "--format=- %s", `${opts.base}..HEAD`])).stdout.trim();
+      scope = `changes since ${opts.base}`;
+      if (log) request += ` The commits say:\n${log}`;
+    } else {
+      diff = (await git(this.root, ["diff", "HEAD"])).stdout;
+      const untracked = (await git(this.root, ["ls-files", "--others", "--exclude-standard"])).stdout.split("\n").filter(Boolean).slice(0, 50);
+      for (const f of untracked) {
+        const r = await run("git", ["diff", "--no-index", "--", "/dev/null", f], { cwd: this.root });
+        diff += r.stdout;
+      }
+      scope = "uncommitted changes";
+    }
+    if (opts.focus) request += `\n\nPay particular attention to: ${opts.focus}`;
+    if (!diff.trim()) return { approved: true, feedback: `Nothing to review: no ${scope}.`, scope, diffLines: 0 };
+    return this.exclusive(async (signal) => {
+      const result = await reviewChange({ request, diff, root: this.root, model: resolveModel(this.cfg, "planner"), effort: this.cfg.effort.planner, events: this.hooks.events, usage: this.usage, signal });
+      this.audit?.record({ type: "result", mode: "review", summary: result.feedback });
+      return { ...result, scope, diffLines: changedLines(diff) };
+    });
+  }
+
+  /** Lets the agent ask the user a clarifying question mid-task. */
+  private askTool(): Tool {
+    return {
+      readOnly: true,
+      spec: {
+        name: "ask_user",
+        description:
+          "Ask the user one short clarifying question when the request is ambiguous and a wrong guess would waste real work (e.g. which of two approaches, a missing credential name, an unclear requirement). Offer 2-4 suggested answers when you can. Don't ask about things you can find out yourself.",
+        parameters: {
+          type: "object",
+          properties: { question: { type: "string" }, options: { type: "array", items: { type: "string" } } },
+          required: ["question"],
+        },
+      },
+      run: async (input) => {
+        const question = String(input.question ?? "").trim();
+        const options = Array.isArray(input.options) ? input.options.map(String).slice(0, 4) : [];
+        if (!this.hooks.ask || this.cfg.permission === "auto") {
+          return "No one is available to answer right now. Make the most reasonable assumption, state it in your final summary, and continue.";
+        }
+        this.audit?.record({ type: "event", event: { type: "status", agent: "swarm", message: `Asked the user: ${question}` } });
+        const answer = (await this.hooks.ask(question, options)).trim();
+        return answer ? `The user answered: ${answer}` : "The user skipped the question. Make a reasonable assumption and state it.";
+      },
+    };
   }
 
   /** Lets the main agent escalate big tasks to the parallel pipeline on its own. */

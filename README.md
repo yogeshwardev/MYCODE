@@ -93,13 +93,15 @@ swarm -c                       # continue the last session
 | `swarm "<task>"` / `swarm ask "<task>"` | Run one task and exit |
 | `swarm run "<task>"` | Plan → parallel agents → merge → verify → review → apply |
 | `swarm best "<task>" -n 3` | Best-of-N: independent attempts, the best verified one wins |
+| `swarm plan "<task>"` | Plan mode: investigate read-only, propose a plan, implement it after you approve |
+| `swarm review [focus]` | Review uncommitted changes (`--base main` for a branch, `--commit <sha>`); exit 2 on issues |
 | `swarm trace [n]` | Show the audit trail of a recent session |
 | `swarm auto "<task>"` / `swarm estimate "<task>"` | Autopilot / forecast only |
 | `swarm health [--tests] [--fix]` | Repo health radar |
 | `swarm proof` / `swarm pr` | Latest proof report / open a PR with it |
 | `swarm replay [--step k]` / `swarm fork <k>` | Time-travel replay and fork |
 | `swarm skill create\|import\|keygen\|sign` | Skill studio |
-| `swarm init` | Create `.swarmcode/config.json` |
+| `swarm init [--agents]` | Create `.swarmcode/config.json`; `--agents` also writes an AGENTS.md |
 | `swarm models` | Show models per role and whether their keys are set |
 | `swarm sessions` | List saved sessions |
 | `swarm clean` | Remove leftover worktrees and `swarm/*` branches |
@@ -114,9 +116,17 @@ swarm -c                       # continue the last session
 | `-g, --guarantee` | Hidden acceptance tests decide whether the work is accepted |
 | `-y, --yes` | Never ask (edits, commands, plans, apply) |
 | `--no-apply` | Keep a parallel result on its branch |
+| `-i, --image file.png` | Attach a screenshot or mockup (repeatable) |
+| `--plan` | Plan mode for this task |
 | `--json` | Machine-readable output, for CI. Exit codes: 0 success, 2 partial or verification failed, 1 error |
 
-Piping works too: `echo "update the changelog" | swarm`.
+Piping works too: `echo "update the changelog" | swarm`. Mention files with `@path/to/file` to attach them to a request.
+
+Gate pull requests in CI with an AI review:
+
+```bash
+swarm review --base origin/main --json -m anthropic/claude-sonnet-5-5   # exit code 2 when it finds issues
+```
 
 ## The desktop app
 
@@ -191,6 +201,8 @@ Settings are layered: built-in defaults, then `~/.swarmcode/config.json`, then `
   "maxParallel": 6,
   "verifyCommand": "npm test",
   "permission": "ask",
+  "rules": { "allow": ["bash:npm test*", "bash:npm run lint*"], "deny": ["bash:git push*", "write:.env*"] },
+  "hooks": { "afterEdit": ["npx prettier --write {file}"] },
   "budgetUsd": 5,
   "providers": { "my-vllm": { "type": "openai", "baseURL": "http://localhost:8000/v1", "apiKeyEnv": "MY_KEY" } },
   "prices": { "my-vllm/my-model": [0.5, 1.5, 0.05] },
@@ -201,6 +213,12 @@ Settings are layered: built-in defaults, then `~/.swarmcode/config.json`, then `
   }
 }
 ```
+
+**Rules** decide approvals before anyone is asked: `deny` blocks, `allow` approves without asking. A rule is `kind:pattern`, where kind is `bash` (pattern matches the command, `*` is a wildcard), `write` (a file glob), `web`, `mcp` or `*`. Deny rules come from every config; allow rules only from your global config, so a cloned repo can't approve its own commands. Destructive commands (force push, `git reset --hard`, deleting root or home, formatting disks, dropping databases, `curl ... | sh`) always need a person unless you allow them explicitly.
+
+**Hooks**: `afterEdit` commands run after each file an agent writes (`{file}` is its path), for example a formatter or linter. Failures are shown to the agent so it fixes them. Hooks go through the same approval as other commands.
+
+**Web search** uses Brave (`BRAVE_API_KEY`) or Tavily (`TAVILY_API_KEY`) when set, and DuckDuckGo otherwise.
 
 **Project instructions** are read from `SWARMCODE.md`, `AGENTS.md`, `CLAUDE.md` or `.cursorrules`, so existing repos work as they are.
 

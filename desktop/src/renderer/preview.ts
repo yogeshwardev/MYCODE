@@ -136,6 +136,14 @@ const mock: SwarmApi = {
     return { report, applied, branch: applied ? null : "swarm/20261013120000" };
   },
   undo: async () => ["src/server.ts"],
+  review: async () => {
+    await wait(900);
+    return {
+      approved: false,
+      scope: "uncommitted changes",
+      feedback: "1. src/api/rate.ts:42: the bucket refills before checking the limit, so a burst of 2× the limit passes on the first second. Check, then refill.\n2. src/api/limits.ts:12: `/health` has no limit entry and falls back to the global default; exempt it explicitly.",
+    };
+  },
   signIn: async (provider) => {
     if (provider === "github") {
       emit({ type: "device-code", code: "WDJB-MJHT", url: "https://github.com/login/device" });

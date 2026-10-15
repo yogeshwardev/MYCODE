@@ -28,6 +28,7 @@ import {
   snapshotBase,
 } from "./git.js";
 import { makePlan, type Plan, type PlanTask } from "./planner.js";
+import { unattendedApprover } from "../policy.js";
 
 export type TaskStatus = "pending" | "running" | "done" | "failed" | "skipped";
 
@@ -178,7 +179,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
         effort: cfg.effort.main,
         system: resolverSystemPrompt(integrationDir),
         tools: CORE_TOOLS,
-        ctx: { root: integrationDir, approve: async () => true, signal },
+        ctx: { root: integrationDir, approve: unattendedApprover(cfg.rules), signal },
         events,
         usage,
         maxTurns: 60,
@@ -232,7 +233,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
               effort: i === 0 ? cfg.effort.worker : cfg.effort.main,
               system: workerSystemPrompt(dir, map, instructions, skillIndex(skills)),
               tools: [...CORE_TOOLS, ...extra, ...skillTools, delegateFor(dir, map)],
-              ctx: { root: dir, approve: async () => true, signal },
+              ctx: { root: dir, approve: unattendedApprover(cfg.rules), signal },
               events,
               usage,
               maxTurns: cfg.maxTurns,
@@ -319,7 +320,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           effort: cfg.effort.main,
           system: workerSystemPrompt(integrationDir, await buildRepoMap(integrationDir, 6000), instructions),
           tools: [...CORE_TOOLS, ...extra],
-          ctx: { root: integrationDir, approve: async () => true, signal },
+          ctx: { root: integrationDir, approve: unattendedApprover(cfg.rules), signal },
           events,
           usage,
           maxTurns: cfg.maxTurns,
@@ -375,7 +376,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
             effort: cfg.effort.main,
             system: workerSystemPrompt(integrationDir, await buildRepoMap(integrationDir, 6000), instructions, skillIndex(skills)),
             tools: [...CORE_TOOLS, ...extra, ...skillTools],
-            ctx: { root: integrationDir, approve: async () => true, signal },
+            ctx: { root: integrationDir, approve: unattendedApprover(cfg.rules), signal },
             events,
             usage,
             maxTurns: cfg.maxTurns,
@@ -419,7 +420,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           effort: cfg.effort.main,
           system: workerSystemPrompt(integrationDir, await buildRepoMap(integrationDir, 6000), instructions, skillIndex(skills)),
           tools: [...CORE_TOOLS, ...extra, ...skillTools],
-          ctx: { root: integrationDir, approve: async () => true, signal },
+          ctx: { root: integrationDir, approve: unattendedApprover(cfg.rules), signal },
           events,
           usage,
           maxTurns: cfg.maxTurns,
@@ -457,7 +458,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           effort: cfg.effort.main,
           system: workerSystemPrompt(integrationDir, await buildRepoMap(integrationDir, 6000), instructions, skillIndex(skills)),
           tools: [...CORE_TOOLS, ...extra, ...skillTools],
-          ctx: { root: integrationDir, approve: async () => true, signal },
+          ctx: { root: integrationDir, approve: unattendedApprover(cfg.rules), signal },
           events,
           usage,
           maxTurns: cfg.maxTurns,

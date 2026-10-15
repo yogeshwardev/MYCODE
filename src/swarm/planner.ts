@@ -49,7 +49,7 @@ export async function councilReview(opts: {
           name: `council-${i + 1}`,
           model,
           system: `${COUNCIL_PROMPT}\n\n<environment>\nWorkspace root: ${opts.root}\n</environment>`,
-          tools: READ_ONLY_TOOLS.filter((t) => t.spec.name !== "web_fetch"),
+          tools: READ_ONLY_TOOLS.filter((t) => !t.spec.name.startsWith("web_")),
           ctx: { root: opts.root, approve: async () => true, signal: opts.signal },
           events: opts.events,
           usage: opts.usage,

@@ -1,6 +1,6 @@
 {
   "name": "swarmcode",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Multi-agent AI coding agent: plans your task, builds it with parallel agents in isolated git worktrees, merges, verifies and applies. Works with any model provider.",
   "keywords": [
     "ai",
@@ -47,7 +47,7 @@
     "prepare": "npm run build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

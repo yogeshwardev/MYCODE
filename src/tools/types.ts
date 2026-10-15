@@ -16,6 +16,8 @@ export interface ToolContext {
   readCache?: Map<string, string>;
   /** Called with an absolute path just before a tool modifies it (powers undo). */
   checkpoint?: (file: string) => void;
+  /** Runs after-edit hooks (formatters, linters) on a written file; returns a note for the model, if any. */
+  afterWrite?: (file: string) => Promise<string | undefined>;
 }
 
 export interface Tool {

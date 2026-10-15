@@ -14,6 +14,7 @@ import { CORE_TOOLS, READ_ONLY_TOOLS, type Tool } from "../tools/index.js";
 import { stopProcesses } from "../tools/processes.js";
 import { clip, runShell } from "../util.js";
 import { addWorktree, applyToWorkingTree, commitAll, excludeSwarmCodeDir, git, gitOk, removeWorktree, snapshotBase } from "./git.js";
+import { unattendedApprover } from "../policy.js";
 
 // Best-of-N: several independent agents (optionally on different models)
 // each solve the whole task in their own worktree. Every candidate is graded
@@ -108,7 +109,7 @@ export async function runBestOf(opts: BestOfOptions): Promise<BestOfResult> {
           ...(skills.length ? [makeSkillTool(skills)] : []),
           makeDelegateTool({ root: dir, model: resolveModel(cfg, "explorer"), effort: cfg.effort.explorer, system: explorerSystemPrompt(dir, map), events, usage, maxParallel: 2 }),
         ],
-        ctx: { root: dir, approve: async () => true, signal },
+        ctx: { root: dir, approve: unattendedApprover(cfg.rules), signal },
         events,
         usage,
         maxTurns: cfg.maxTurns,
@@ -171,8 +172,8 @@ export async function runBestOf(opts: BestOfOptions): Promise<BestOfResult> {
         effort: cfg.effort.planner,
         system:
           "You are a principal engineer choosing the best of several independent implementations of the same task. Judge correctness against every requirement first, then robustness (edge cases, error handling), security, fit with the existing codebase, and simplicity. Use the read-only tools to inspect the code if needed. Answer with the first line exactly `WINNER: <number>`, followed by a short justification comparing the candidates.",
-        tools: READ_ONLY_TOOLS.filter((t) => t.spec.name !== "web_fetch"),
-        ctx: { root, approve: async () => true, signal },
+        tools: READ_ONLY_TOOLS.filter((t) => !t.spec.name.startsWith("web_")),
+        ctx: { root, approve: unattendedApprover(cfg.rules), signal },
         events,
         usage,
         maxTurns: 20,

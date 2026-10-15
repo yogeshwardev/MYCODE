@@ -34,7 +34,16 @@ export async function repoRoot(dir: string): Promise<string> {
 export async function resolveProject(dir: string): Promise<{ root: string; isRepo: boolean; homeRepo: boolean }> {
   if (!(await isGitRepo(dir))) return { root: path.resolve(dir), isRepo: false, homeRepo: false };
   const root = await repoRoot(dir);
-  const atHome = root.toLowerCase() === path.resolve(os.homedir()).toLowerCase() && path.resolve(dir) !== root;
+  // Compare real paths: on Windows the same folder can appear as a short 8.3
+  // name (RUNNER~1) or a long one, and with different letter case.
+  const real = (p: string) => {
+    try {
+      return fs.realpathSync.native(p).toLowerCase();
+    } catch {
+      return path.resolve(p).toLowerCase();
+    }
+  };
+  const atHome = real(root) === real(os.homedir()) && real(dir) !== real(root);
   return atHome ? { root: path.resolve(dir), isRepo: false, homeRepo: true } : { root, isRepo: true, homeRepo: false };
 }
 

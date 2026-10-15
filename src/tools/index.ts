@@ -17,7 +17,7 @@ import {
 export type { ApprovalKind, Tool, ToolContext } from "./types.js";
 export { ToolError } from "./types.js";
 import { ToolError, type Tool, type ToolContext } from "./types.js";
-import { webFetch } from "./web.js";
+import { webFetch, webSearch } from "./web.js";
 import { securityScan } from "./security.js";
 import { BROWSER_TOOLS } from "./browser.js";
 import { generatePdf, readDocument } from "./documents.js";
@@ -105,7 +105,8 @@ const writeFile: Tool = {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, str(input, "content"));
     touched(ctx, file);
-    return `${existed ? "Overwrote" : "Created"} ${rel} (${str(input, "content").split("\n").length} lines)`;
+    const note = await ctx.afterWrite?.(file);
+    return `${existed ? "Overwrote" : "Created"} ${rel} (${str(input, "content").split("\n").length} lines)${note ? `\n${note}` : ""}`;
   },
 };
 
@@ -167,7 +168,8 @@ const editFile: Tool = {
       const oldS = op.old_string.replace(/\r\n/g, "\n");
       const newS = op.new_string.replace(/\r\n/g, "\n");
       if (!oldS) throw new ToolError(`${label}old_string is empty. Use write_file to create or replace a whole file.`);
-      if (oldS === newS) throw new ToolError(`${label}old_string and new_string are identical.`);
+      // A no-op edit isn't an error: models retry errors, so just move on.
+      if (oldS === newS) continue;
       const count = text.split(oldS).length - 1;
       if (count === 0) throw new ToolError(`${label}old_string was not found. Nothing was changed. Re-read the file and copy the text exactly.`);
       if (count > 1 && !op.replace_all) {
@@ -176,6 +178,7 @@ const editFile: Tool = {
       changedAt.push(text.indexOf(oldS));
       text = op.replace_all ? text.split(oldS).join(newS) : text.replace(oldS, () => newS);
     }
+    if (!changedAt.length) return `No change needed in ${rel}: old_string and new_string are identical, so the file already reads that way.`;
     if (!(await ctx.approve("write", `Edit ${rel}${ops.length > 1 ? ` (${ops.length} changes)` : ""}`))) {
       throw new ToolError("User declined the edit.");
     }
@@ -188,7 +191,8 @@ const editFile: Tool = {
     const firstLine = text.slice(0, Math.min(...changedAt)).split("\n").length;
     const from = Math.max(1, firstLine - 3);
     const snippet = numbered(lines.slice(from - 1, from - 1 + 14), from);
-    return `Edited ${rel} (${ops.length} change${ops.length > 1 ? "s" : ""}). Region after the edit:\n${snippet}`;
+    const note = await ctx.afterWrite?.(file);
+    return `Edited ${rel} (${ops.length} change${ops.length > 1 ? "s" : ""}). Region after the edit:\n${snippet}${note ? `\n${note}` : ""}`;
   },
 };
 
@@ -312,7 +316,7 @@ const bash: Tool = {
   },
   async run(input, ctx) {
     const command = str(input, "command");
-    if (DANGEROUS.some((re) => re.test(command))) throw new ToolError("Refused: this command looks destructive outside the project.");
+    if (DANGEROUS.some((re) => re.test(command))) throw new ToolError("Refused: this command could wipe or disable the whole system. Never run it.");
     if (!(await ctx.approve("bash", input.background ? `${command}  (in the background)` : command))) throw new ToolError("User declined the command.");
     if (input.background) return runInBackground(command, ctx.root, ctx.signal);
     const timeout = Math.min(600_000, Number(input.timeout_ms ?? 120_000));
@@ -335,11 +339,10 @@ const DANGEROUS = [
   /\bdd\s+if=.*of=\/dev\//,
   /:\(\)\s*\{\s*:\|:&\s*\};:/,
   /\bformat\s+[a-z]:/i,
-  /\bgit\s+push\b.*(--force|\s-f\b)/,
   /\bshutdown\b|\breboot\b/,
 ];
 
-export const CORE_TOOLS: Tool[] = [readFile, readDocument, listDir, glob, grep, securityScan, editFile, writeFile, generatePdf, bash, processOutput, processStop, webFetch, ...BROWSER_TOOLS];
+export const CORE_TOOLS: Tool[] = [readFile, readDocument, listDir, glob, grep, securityScan, editFile, writeFile, generatePdf, bash, processOutput, processStop, webFetch, webSearch, ...BROWSER_TOOLS];
 export const READ_ONLY_TOOLS: Tool[] = CORE_TOOLS.filter((t) => t.readOnly);
 
 /** Light schema check: required keys present and primitive types right. */
