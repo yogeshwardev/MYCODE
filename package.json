@@ -1,0 +1,64 @@
+{
+  "name": "swarmcode",
+  "version": "1.0.0",
+  "description": "Multi-agent AI coding agent: plans your task, builds it with parallel agents in isolated git worktrees, merges, verifies and applies. Works with any model provider.",
+  "keywords": [
+    "ai",
+    "coding-agent",
+    "multi-agent",
+    "llm",
+    "claude",
+    "openai",
+    "gemini",
+    "ollama",
+    "mcp",
+    "cli",
+    "git-worktree"
+  ],
+  "license": "Apache-2.0",
+  "author": "SwarmCode contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yogeshwardev/MYCODE.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yogeshwardev/MYCODE/issues"
+  },
+  "homepage": "https://github.com/yogeshwardev/MYCODE#readme",
+  "type": "module",
+  "bin": {
+    "swarm": "dist/index.js",
+    "swarmcode": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "skills/*.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p .",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "bench": "tsx bench/run.ts",
+    "test": "tsx --test test/*.test.ts",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "mammoth": "^1.13.0",
+    "openai": "^7.32.0",
+    "pdfjs-dist": "^6.4.299",
+    "playwright-core": "^1.64.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

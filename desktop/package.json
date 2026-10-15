@@ -1,0 +1,77 @@
+{
+  "name": "swarmcode-desktop",
+  "productName": "SwarmCode",
+  "version": "1.0.0",
+  "description": "SwarmCode desktop: a multi-agent AI coding workspace",
+  "license": "Apache-2.0",
+  "main": "dist/main.mjs",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && electron .",
+    "preview": "node build.mjs --preview",
+    "dist": "node build.mjs && electron-builder --publish never",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^6.4.299",
+    "playwright-core": "^1.64.1"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2"
+  },
+  "build": {
+    "appId": "dev.swarmcode.desktop",
+    "productName": "SwarmCode",
+    "files": [
+      "dist/**/*",
+      "!dist/**/*.map",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SwarmCode",
+      "artifactName": "SwarmCode-Setup-${version}.${ext}",
+      "license": "../LICENSE"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development",
+      "icon": "build/icon.png"
+    },
+    "copyright": "Copyright \u00a9 2026 SwarmCode contributors"
+  },
+  "author": {
+    "name": "SwarmCode contributors"
+  },
+  "homepage": "https://swarmcode.dev"
+}

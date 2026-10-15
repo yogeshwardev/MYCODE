@@ -1,0 +1,86 @@
+[
+  {
+    "id": "mini-fix-bug",
+    "category": "small",
+    "fixture": "mini-lib",
+    "prompt": "The daysBetween test fails. Find and fix the bug in src/dates.js.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-discount-bug",
+    "category": "small",
+    "fixture": "shop",
+    "prompt": "Customers report wrong cart totals: a cart worth $39.98 shows $40, and discounted totals lose their cents. Totals must be in dollars rounded to the nearest cent (the 10% discount at $100 or more stays). Fix it and add a regression test.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-email-validation",
+    "category": "small",
+    "fixture": "shop",
+    "prompt": "createUser in src/users.js must validate the email: trim it and lowercase it before storing; throw an Error with message \"Invalid email\" unless it looks like local@domain.tld (exactly one @, a non-empty local part, a domain containing a dot that is not at the start or end, and no whitespace); and throw an Error with message \"Email already registered\" if another user already has that email (compare after normalizing). Add tests.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-rename",
+    "category": "small",
+    "fixture": "shop",
+    "prompt": "Rename the cart function calcTotal to cartTotal everywhere (source and tests). After the change, src/cart.js must export cartTotal and must no longer export calcTotal. Behavior must not change.",
+    "verify": "node --test"
+  },
+  {
+    "id": "mini-multi-module",
+    "category": "medium",
+    "fixture": "mini-lib",
+    "prompt": "Add these functions, each with node:test tests in the matching test file: in src/strings.js add slugify(s) (lowercase; every run of non-alphanumeric characters becomes a single dash; no leading or trailing dashes) and titleCase(s) (capitalize the first letter of every space-separated word, lowercase the rest); in src/math.js add clamp(n, min, max) and range(start, end, step = 1) returning an array (end exclusive). Also fix the failing daysBetween test in src/dates.js.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-pagination",
+    "category": "medium",
+    "fixture": "shop",
+    "prompt": "Change listProducts in src/products.js to support pagination. New signature: listProducts({ category, page = 1, pageSize = 10 } = {}) returns { items, total, page, pageSize, pages }, where total is the number of matching products, pages = Math.ceil(total / pageSize) (0 when there are none), and items is that page's slice in insertion order. Throw an Error with message \"Invalid page\" if page < 1 or pageSize < 1 or either is not an integer. Update every caller and the existing tests, and add tests for pagination.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-orders-csv",
+    "category": "medium",
+    "fixture": "shop",
+    "prompt": "Add src/export.js exporting exportOrdersCsv({ userId } = {}) that returns all orders (only that user's if userId is given) as CSV text. Header row: id,userId,status,total,items,createdAt. One row per order in creation order. The items field is each item as \"<productId> x <qty>\" joined with \"; \". Any field containing a comma, a double quote or a newline is wrapped in double quotes with inner double quotes doubled. Rows are joined with \"\\n\" and there is no trailing newline. Add tests.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-inventory",
+    "category": "medium",
+    "fixture": "shop",
+    "prompt": "Make orders respect stock. placeOrder must check every item first: if any item's qty is greater than the product's stock, throw an Error with message \"Insufficient stock for <productId>\" and change nothing. Otherwise decrement each product's stock by the ordered qty. Also add cancelOrder(orderId) to src/orders.js: it throws Error(\"Unknown order: <orderId>\") for an unknown id and Error(\"Order already cancelled\") if it is already cancelled; otherwise it sets the order's status to \"cancelled\", restores the stock of every item, and returns the order. Add tests.",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-four-features",
+    "category": "large",
+    "fixture": "shop",
+    "prompt": "Add four independent features to the shop, each in its own module with its own test file. All new state must be stored on the db object in src/db.js and cleared by reset().\n\n1. src/coupons.js: createCoupon({ code, percentOff, expiresAt }) stores the code uppercased (codes are case-insensitive), percentOff must be an integer 1..100 (else Error \"Invalid percentOff\"), a duplicate code throws Error \"Coupon exists\"; expiresAt is an optional Date. applyCoupon(total, code, { now = new Date() } = {}) returns the total reduced by percentOff, rounded to the nearest cent; unknown code throws Error \"Unknown coupon\"; if expiresAt is set and now > expiresAt, throws Error \"Coupon expired\".\n\n2. src/reviews.js: addReview({ productId, userId, rating, text = \"\" }) where rating must be an integer 1..5 (else Error \"Invalid rating\"), an unknown product throws Error \"Unknown product: <productId>\", and a second review of the same product by the same user throws Error \"Already reviewed\"; returns the review. listReviews(productId) returns reviews in the order added. averageRating(productId) returns the mean rounded to 1 decimal place, or null if there are no reviews.\n\n3. src/wishlist.js: addToWishlist(userId, productId) (adding twice has no effect; unknown product throws Error \"Unknown product: <productId>\"), removeFromWishlist(userId, productId), getWishlist(userId) returns the product objects in the order they were added (empty array if none).\n\n4. src/shipping.js: shippingCost(items, zone) where items is [{ productId, qty }] and weight comes from each product's weightKg. Total weight is rounded up to a whole kg. \"domestic\" costs 5 + 1 per kg; \"international\" costs 15 + 4 per kg; an empty item list costs 0; any other zone throws Error \"Unknown zone\".",
+    "verify": "node --test"
+  },
+  {
+    "id": "ds-four-structures",
+    "category": "large",
+    "fixture": "dslib",
+    "prompt": "Add four data structures, each in its own file with its own test file, all re-exported from src/index.js (keep the existing Stack export).\n\n1. src/lru.js: class LRUCache(capacity) with get(key) (returns undefined if missing; marks the key most recently used), set(key, value) (updates/inserts and marks most recent; evicts the least recently used entry when over capacity; returns this), has(key) (does not change recency), delete(key) (returns boolean), and a size getter. Throw Error \"capacity must be a positive integer\" for invalid capacity.\n\n2. src/priority-queue.js: class PriorityQueue(compare = (a, b) => a - b), a binary heap where pop() returns the smallest element by compare (undefined when empty), push(value) returns this, peek() returns the smallest without removing it, and a size getter.\n\n3. src/trie.js: class Trie with insert(word), has(word) (exact word), startsWith(prefix) returning all inserted words with that prefix sorted alphabetically, delete(word) returning boolean (other words with shared prefixes must survive), and a size getter (number of distinct words).\n\n4. src/event-emitter.js: class EventEmitter with on(event, listener) and once(event, listener) (both return this), off(event, listener) (returns this), and emit(event, ...args) which calls the listeners in registration order and returns true if there were any listeners, false otherwise. once listeners run at most once.",
+    "verify": "node --test"
+  },
+  {
+    "id": "utils-eight-functions",
+    "category": "large",
+    "fixture": "utils",
+    "prompt": "Add eight utilities, each with tests in a test file per source file, keeping the existing exports:\n\nsrc/strings.js: camelCase(s) (split on spaces, dashes and underscores, ignore empty parts; first word lowercase, later words capitalized with the rest lowercase; e.g. \"Foo-bar_baz qux\" -> \"fooBarBazQux\"); truncate(s, max, suffix = \"…\") (return s unchanged if s.length <= max, else the first max - suffix.length characters followed by suffix).\n\nsrc/arrays.js: chunk(arr, size) (consecutive slices of length size, the last may be shorter; Error \"size must be a positive integer\" otherwise); uniqueBy(arr, keyFn) (keep the first element for each key, in original order).\n\nsrc/objects.js: deepMerge(a, b) (returns a new object; plain objects are merged recursively; for any other value, including arrays, b's value replaces a's; inputs are not mutated); pick(obj, keys) (a new object with only those own keys that exist on obj).\n\nsrc/async.js: retry(fn, { retries = 3, delayMs = 0 } = {}) (call the async fn; on rejection, wait delayMs and try again, up to retries additional times; resolve with the first success or reject with the last error); mapLimit(items, limit, fn) (resolve to an array of await fn(item, index) in input order, never running more than limit calls at once).",
+    "verify": "node --test"
+  },
+  {
+    "id": "shop-reports",
+    "category": "large",
+    "fixture": "shop",
+    "prompt": "Add a reporting module under src/reports/, one file per report, each with its own test file, re-exported from src/reports/index.js. Only orders whose status is not \"cancelled\" count. Money values are rounded to the nearest cent.\n\n1. src/reports/sales.js: salesByDay({ from, to } = {}) returns [{ date, orders, revenue }] per UTC day (date as \"YYYY-MM-DD\" from createdAt), sorted by date ascending, only days with orders, optionally limited to from <= date <= to (inclusive, \"YYYY-MM-DD\" strings). revenue is the sum of order totals.\n\n2. src/reports/products.js: topProducts(n = 5) returns up to n entries [{ productId, name, quantity, revenue }] aggregated over order items (revenue = sum of price * qty), sorted by quantity descending, then revenue descending, then productId ascending.\n\n3. src/reports/customers.js: customerLifetimeValue(userId) returns { userId, orders, total, averageOrder } (averageOrder is 0 when there are no orders); throws Error \"Unknown user: <userId>\" for an unknown user.",
+    "verify": "node --test"
+  }
+]

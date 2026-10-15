@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f1f1f"/>
+      <stop offset="1" stop-color="#050505"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#sheen)"/>
+  <rect x="66" y="66" width="892" height="892" rx="206" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="4"/>
+  <!-- three agents converging on one result -->
+  <g stroke="#ffffff" stroke-width="36" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M310 300 C 470 300, 520 512, 690 512"/>
+    <path d="M310 512 L 690 512"/>
+    <path d="M310 724 C 470 724, 520 512, 690 512"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="300" cy="300" r="58"/>
+    <circle cx="300" cy="512" r="58"/>
+    <circle cx="300" cy="724" r="58"/>
+    <circle cx="704" cy="512" r="104"/>
+  </g>
+</svg>

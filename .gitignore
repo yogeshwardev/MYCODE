@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.swarmcode/worktrees/
+.swarmcode/runs/
+desktop/dist/
+desktop/dist-preview/
+desktop/release/
+*.tsbuildinfo
+bench/results/
+bench/.last-results.json
+desktop/release-new/
+.claude/
+*.log
+.env
+.env.*

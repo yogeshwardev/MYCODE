@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Download SwarmCode</title>
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js"></script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="24" height="24" /><span>SwarmCode</span></a>
+      </div>
+    </header>
+    <main class="dl">
+      <div class="wrap">
+        <img src="/assets/icon.svg" alt="" width="72" height="72" style="margin: 0 auto 24px" />
+        <h1 id="title">Thanks for downloading SwarmCode</h1>
+        <p class="lede" id="msg">Your download will start in a moment.</p>
+        <div class="cta-row"><a class="btn primary lg" id="again" href="#">Download again</a><a class="btn lg" href="/">Back to site</a></div>
+        <ol>
+          <li>Run <b>SwarmCode-Setup</b> from your downloads.</li>
+          <li>If Windows SmartScreen appears, click <b>More info</b>, then <b>Run anyway</b>. Early builds aren't code-signed yet.</li>
+          <li>Open SwarmCode, sign in, and add a model: an API key, or a free local model with Ollama.</li>
+          <li>Prefer the terminal? <code>npm i -g swarmcode</code>, then <code>swarm</code>.</li>
+        </ol>
+      </div>
+    </main>
+    <script>
+      (() => {
+        const cfg = window.SWARMCODE_SITE || {};
+        const again = document.getElementById("again");
+        if (cfg.downloadUrl) {
+          again.href = cfg.downloadUrl;
+          setTimeout(() => (location.href = cfg.downloadUrl), 600);
+        } else {
+          document.getElementById("title").textContent = "Download coming soon";
+          document.getElementById("msg").textContent = "The Windows installer is being published. Meanwhile, the CLI works on every OS.";
+          again.remove();
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SwarmCode · Your AI engineering team</title>
+    <meta name="description" content="SwarmCode plans your task, builds it with AI agents working in parallel, tests and reviews the result, and hands you a clean diff. Works with Claude, GPT, Gemini, DeepSeek, OpenRouter and local models." />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:title" content="SwarmCode · Your AI engineering team" />
+    <meta property="og:description" content="Parallel AI agents that plan, build, test and review your code, with proof for every change." />
+    <meta property="og:image" content="/assets/og.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/icon-180.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js" defer></script>
+    <script src="/main.js" defer></script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="/" aria-label="SwarmCode home">
+          <img src="/assets/icon.svg" alt="" width="24" height="24" />
+          <span>SwarmCode</span>
+        </a>
+        <nav class="links" aria-label="Main">
+          <a href="#how">How it works</a>
+          <a href="#features">Features</a>
+          <a href="#benchmarks">Benchmarks</a>
+          <a href="#skills">Skills</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn ghost repo-link" href="#" hidden>GitHub</a>
+          <a class="btn primary sm" href="/download" data-download>Download</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero -->
+      <section class="hero">
+        <div class="wrap">
+          <p class="eyebrow"><span class="dot"></span> <span data-version>v1.0</span> for Windows · free with your own models</p>
+          <h1>Your AI engineering team.</h1>
+          <p class="lede">Describe what you want. SwarmCode plans it, builds it with agents working in parallel, tests and reviews the result, and hands you a clean diff with proof that it works.</p>
+          <div class="cta-row">
+            <a class="btn primary lg" href="/download" data-download>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zm8.5 0H21V21l-9.5-1.3z" fill="currentColor"/></svg>
+              Download for Windows
+            </a>
+            <a class="btn lg" href="#benchmarks">See the benchmarks</a>
+          </div>
+          <p class="fine"><span data-size>125 MB</span> · Windows 10/11 · <code>npm i -g swarmcode</code> for the CLI on any OS</p>
+          <div class="models">Works with <b>Claude</b> · <b>GPT</b> · <b>Gemini</b> · <b>DeepSeek</b> · <b>OpenRouter</b> · <b>Ollama</b> and any OpenAI-compatible model</div>
+        </div>
+        <div class="wrap">
+          <figure class="shot hero-shot">
+            <img src="/assets/agents.png" alt="SwarmCode running four agents in parallel on a plan, with live status for each" width="1858" height="976" />
+          </figure>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section id="how" class="section">
+        <div class="wrap">
+          <p class="kicker">How it works</p>
+          <h2>From request to reviewed diff, automatically.</h2>
+          <p class="sub">Other tools give you parallel agents and leave the splitting, merging and checking to you. SwarmCode runs the whole loop.</p>
+          <ol class="pipeline">
+            <li><span class="num">1</span><b>Plan</b><span>A planner maps the code and splits the work into a dependency graph with clear file ownership.</span></li>
+            <li><span class="num">2</span><b>Build in parallel</b><span>Agents work at the same time, each in its own isolated git worktree.</span></li>
+            <li><span class="num">3</span><b>Merge</b><span>Results merge as they finish; an agent resolves any conflicts.</span></li>
+            <li><span class="num">4</span><b>Test</b><span>Your test command runs; failures go back to the agents automatically.</span></li>
+            <li><span class="num">5</span><b>Review</b><span>An independent reviewer and a security gate check the combined change.</span></li>
+            <li><span class="num">6</span><b>Apply</b><span>You get one diff and a proof report. Apply it, or keep it on a branch.</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="section">
+        <div class="wrap">
+          <p class="kicker">Features</p>
+          <h2>Built to be trusted, not just fast.</h2>
+          <div class="bento">
+            <article class="tile wide">
+              <h3>Parallel agents that finish the job</h3>
+              <p>Big tasks are planned, split and built by several agents at once, then merged, tested and reviewed. Small tasks go straight to a single agent. SwarmCode picks, and asks before spending more.</p>
+            </article>
+            <article class="tile">
+              <h3>Hidden-test guarantee</h3>
+              <p>Before any code is written, a separate agent turns your request into acceptance tests the builders never see. The work is done only when they pass.</p>
+            </article>
+            <article class="tile">
+              <h3>Best of 3</h3>
+              <p>Three independent attempts, even on different models. Each is graded on your tests and on security, and a judge picks the winner.</p>
+            </article>
+            <article class="tile">
+              <h3>Proof for every change</h3>
+              <p>A report with every check, the files changed, models, tokens and cost. One command turns it into a pull request.</p>
+            </article>
+            <article class="tile">
+              <h3>Security gate</h3>
+              <p>New secrets, injection risks or disabled TLS that a change introduces are caught and fixed before you see it.</p>
+            </article>
+            <article class="tile">
+              <h3>Any model, your keys</h3>
+              <p>Claude, GPT, Gemini, DeepSeek, OpenRouter or free local models. A strong model plans while fast ones build.</p>
+            </article>
+            <article class="tile wide">
+              <h3>Long sessions without amnesia</h3>
+              <p>Every agent keeps a searchable journal, so it can recall file contents and decisions even after its context is compacted. Huge logs are kept out of context and read on demand, which cuts token use.</p>
+            </article>
+            <article class="tile">
+              <h3>Time travel</h3>
+              <p>Every request is checkpointed. Replay what happened, or re-run any request from its exact starting code with another model.</p>
+            </article>
+            <article class="tile">
+              <h3>Health radar</h3>
+              <p>One scan for secrets, risky code, vulnerable dependencies, failing tests and hotspots, each with a one-click fix.</p>
+            </article>
+            <article class="tile">
+              <h3>Browser, PDFs and documents</h3>
+              <p>Agents test your web app in a real browser, read PDFs and Word files, and produce polished PDF reports.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screens -->
+      <section class="section">
+        <div class="wrap">
+          <p class="kicker">The app</p>
+          <h2>Calm enough to work in all day.</h2>
+          <div class="tabs" role="tablist" aria-label="Screenshots">
+            <button role="tab" aria-selected="true" data-shot="agents">Live agents</button>
+            <button role="tab" aria-selected="false" data-shot="review">Review and apply</button>
+            <button role="tab" aria-selected="false" data-shot="commands">/ commands</button>
+            <button role="tab" aria-selected="false" data-shot="health">Health radar</button>
+            <button role="tab" aria-selected="false" data-shot="welcome">Welcome</button>
+          </div>
+          <figure class="shot">
+            <img id="shot" src="/assets/agents.png" alt="SwarmCode screenshot" width="1858" height="976" loading="lazy" />
+          </figure>
+        </div>
+      </section>
+
+      <!-- Benchmarks -->
+      <section id="benchmarks" class="section">
+        <div class="wrap">
+          <p class="kicker">Benchmarks</p>
+          <h2>Measured, not claimed.</h2>
+          <p class="sub" id="bench-intro">Twelve realistic tasks, from small bug fixes to multi-feature builds, graded by hidden acceptance tests the agents never see. Every tool ran the same model.</p>
+          <div id="bench-cards" class="bench-cards"></div>
+          <div class="bench-table-wrap">
+            <table class="bench-table" id="bench-table">
+              <caption class="sr-only">Results per task</caption>
+            </table>
+          </div>
+          <div class="bench-notes">
+            <p id="bench-meta"></p>
+            <p>How it works: each task starts from a fresh copy of a small real-world project. When an agent finishes, hidden tests are copied in and run; pass means every requirement works. One run per task and tool, so treat small differences as noise. The harness is open source, so you can run it on your own models: <code>npm run bench -- --external "name=your-cli {prompt}"</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Skills -->
+      <section id="skills" class="section">
+        <div class="wrap">
+          <p class="kicker">Skills</p>
+          <h2>Expert playbooks for every kind of work.</h2>
+          <p class="sub">SwarmCode picks the right ones for each request. Type <code>/</code> to choose them yourself, and add your team's own.</p>
+          <div class="skill-groups">
+            <div><h4>Build</h4><p>new-project · web &amp; frontend-quality · ui-design · mobile-app · api-design · database · llm-apps · migration-upgrade · refactoring · performance</p></div>
+            <div><h4>Ship</h4><p>test-writing · web-qa · debugging · code-review · git-workflow · devops-ci · deployment · docs-writing · explain-codebase</p></div>
+            <div><h4>Work</h4><p>documents (PDF, Word, Excel) · data-analysis · automation-scripts</p></div>
+            <div><h4>Secure</h4><p>security-review · secure-fix · threat-model · dependency-audit · secrets-hygiene · hardening · cloud-security · api-security-testing · compliance-evidence · detection-engineering · incident-forensics · suspicious-code-triage · pentest-report</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section class="section">
+        <div class="wrap split">
+          <div>
+            <p class="kicker">Privacy</p>
+            <h2>Your code stays yours.</h2>
+          </div>
+          <ul class="checks">
+            <li>Runs on your machine. Code goes only to the model provider you choose, or nowhere with local models.</li>
+            <li>API keys are encrypted with your OS keychain.</li>
+            <li>No telemetry.</li>
+            <li>Every edit and command needs your approval, unless you turn on autonomous mode.</li>
+            <li>A full audit trail of what every agent did.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="section">
+        <div class="wrap">
+          <p class="kicker">FAQ</p>
+          <h2>Questions</h2>
+          <div class="faq">
+            <details><summary>Is it free?</summary><p>Yes. SwarmCode is open source (Apache-2.0). You pay your model provider for usage, or use free and local models through Ollama.</p></details>
+            <details><summary>Which models work best?</summary><p>Any capable tool-calling model works. A strong model (such as Claude Opus or GPT-class) for planning and review, with a faster one for the parallel workers, gives the best balance of quality and cost.</p></details>
+            <details><summary>Do I need git?</summary><p>For parallel agents and best-of-3, yes: each agent works in its own git worktree. The single agent works in any folder.</p></details>
+            <details><summary>Windows says the app is unrecognized.</summary><p>Early builds are not code-signed yet. Click "More info", then "Run anyway". Signed builds are on the way.</p></details>
+            <details><summary>macOS and Linux?</summary><p>The CLI runs everywhere (<code>npm i -g swarmcode</code>). Desktop builds for macOS and Linux come from the same code and are coming soon.</p></details>
+            <details><summary>Can my team share skills?</summary><p>Yes. Turn a good session into a skill with one command, and share it with SHA-256 pinning and Ed25519 signatures so nobody can tamper with it.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="section final">
+        <div class="wrap center">
+          <img src="/assets/icon.svg" alt="" width="56" height="56" />
+          <h2>Bring a team to every task.</h2>
+          <div class="cta-row center">
+            <a class="btn primary lg" href="/download" data-download>Download for Windows</a>
+            <a class="btn lg" href="#how">How it works</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <span>© <span id="year">2026</span> SwarmCode contributors · Apache-2.0</span>
+        <span class="links"><a href="#benchmarks">Benchmarks</a><a href="#faq">FAQ</a><a class="repo-link" href="#" hidden>GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

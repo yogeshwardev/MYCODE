@@ -1,0 +1,7 @@
+{
+  "name": "shop",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A small in-memory store backend.",
+  "scripts": { "test": "node --test" }
+}
