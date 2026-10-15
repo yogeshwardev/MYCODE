@@ -237,6 +237,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
               usage,
               maxTurns: cfg.maxTurns,
               compactAt: cfg.compactAt,
+              contextBudget: cfg.contextBudget,
             });
             const hints = suggestSkills(`${t.title} ${t.description}`, skills);
             const brief = taskPrompt(opts.goal, plan, t, states, verifyCmd) + (hints.length ? `\n\n[Relevant skills: ${hints.map((s) => s.name).join(", ")}. Load with use_skill if they fit.]` : "");
@@ -323,6 +324,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           usage,
           maxTurns: cfg.maxTurns,
           compactAt: cfg.compactAt,
+          contextBudget: cfg.contextBudget,
         });
         const baselineNote =
           before === undefined
@@ -378,6 +380,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
             usage,
             maxTurns: cfg.maxTurns,
             compactAt: cfg.compactAt,
+            contextBudget: cfg.contextBudget,
           });
           await fixer.run(
             `Several engineers implemented this goal in parallel and their work was merged:\n${opts.goal}\n\n` +
@@ -421,6 +424,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           usage,
           maxTurns: cfg.maxTurns,
           compactAt: cfg.compactAt,
+          contextBudget: cfg.contextBudget,
         });
         await fixer.run(`Goal of this change:\n${opts.goal}\n\n${GATE_INSTRUCTIONS.replace("{findings}", describeFindings(found))}`, signal);
         await commitAll(integrationDir, "swarm: address security gate findings");
@@ -458,6 +462,7 @@ export async function runSwarm(opts: SwarmOptions): Promise<SwarmResult> {
           usage,
           maxTurns: cfg.maxTurns,
           compactAt: cfg.compactAt,
+          contextBudget: cfg.contextBudget,
         });
         await fixer.run(
           `Several engineers implemented this goal in parallel and their work was merged:\n${opts.goal}\n\n` +

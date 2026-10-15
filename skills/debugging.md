@@ -1,7 +1,7 @@
 ---
 name: debugging
 description: Systematically find the root cause of a bug, crash, flaky test or wrong output, then fix it with a regression test.
-triggers: bug, error, crash, exception, stack trace, failing test, flaky, not working, broken, regression, debug
+triggers: bug, error, crash, exception, stack trace, failing test, test failing, test fails, tests fail, failing, flaky, not working, broken, regression, debug, why does, why is
 ---
 1. **Reproduce.** Get a reliable reproduction first: the failing test, command or input. If it is flaky, run it in a loop to measure how often it fails (`for i in $(seq 20); do ...; done`).
 2. **Read the evidence.** The full error message and stack trace, the logs, and what changed recently (`git log -p --since=... -- <paths>`, `git diff`). Find the exact line where the failure surfaces.

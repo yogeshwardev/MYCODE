@@ -46,3 +46,26 @@ test("openai adapter never sends null content (empty replies are kept as strings
     server.close();
   }
 });
+
+test("trim shrinks older tool output and large call arguments, keeping recent ones", () => {
+  const model = openaiModel("test/m", "test", "m", 100_000, { baseURL: "http://127.0.0.1:9/v1", apiKey: "x" });
+  const session = model.createSession({ system: "s", tools: [] });
+  const big = "x".repeat(5000);
+  const history: unknown[] = [{ role: "user", content: "go" }];
+  for (let i = 0; i < 6; i++) {
+    history.push({ role: "assistant", content: "", tool_calls: [{ id: `c${i}`, type: "function", function: { name: "write_file", arguments: JSON.stringify({ path: `f${i}.js`, content: big }) } }] });
+    history.push({ role: "tool", tool_call_id: `c${i}`, content: i === 1 ? "short" : big });
+  }
+  session.importHistory(history);
+  const stubbed: string[] = [];
+  const removed = session.trim!({ keepRecent: 2, minChars: 1000, result: (id) => (stubbed.push(id), `[cleared ${id}]`) });
+  const after = session.exportHistory() as Array<{ role: string; content?: string; tool_calls?: Array<{ function: { arguments: string } }> }>;
+  const tools = after.filter((m) => m.role === "tool").map((m) => m.content);
+  assert.deepEqual(stubbed, ["c0", "c2", "c3"]); // c1 is short; c4 and c5 are recent
+  assert.deepEqual(tools, ["[cleared c0]", "short", "[cleared c2]", "[cleared c3]", big, big]);
+  const args = after.flatMap((m) => m.tool_calls ?? []).map((c) => JSON.parse(c.function.arguments));
+  assert.equal(args[0].path, "f0.js");
+  assert.match(args[0].content, /5000 characters omitted/);
+  assert.equal(args[5].content, big);
+  assert.ok(removed > 6 * 4000);
+});

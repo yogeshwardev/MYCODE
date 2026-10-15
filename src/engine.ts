@@ -15,7 +15,7 @@ import { loadConfig, resolveModel, type SwarmCodeConfig } from "./config.js";
 import { connectMcp, type McpConnection } from "./mcp.js";
 import { buildRepoMap, loadProjectInstructions } from "./repo/repomap.js";
 import { listSessions, loadSession, newSessionId, saveSession, type SavedSession } from "./sessions.js";
-import { loadSkills, makeSkillTool, skillIndex, suggestSkills, type Skill } from "./skills.js";
+import { loadSkills, makeSkillTool, rankSkills, skillIndex, STRONG_SKILL_MATCH, type Skill } from "./skills.js";
 import { excludeSwarmCodeDir, git, resolveProject } from "./swarm/git.js";
 import { runSwarm, type SwarmResult, type TaskState } from "./swarm/orchestrator.js";
 import { runBestOf, type BestOfResult } from "./swarm/tournament.js";
@@ -155,10 +155,16 @@ export class Engine {
       if (!skill) throw new Error(`Unknown skill "${name}". Available: ${this.skills.map((s) => s.name).join(", ")}`);
       fullPrompt = `Follow the "${skill.name}" skill for this request:\n\n${skill.body}\n\n---\n\n${fullPrompt}`;
     }
-    // Point the agent at playbooks that match the request; it still decides whether to load them.
-    const suggested = opts.skills?.length ? [] : suggestSkills(prompt, this.skills);
-    if (suggested.length) {
-      fullPrompt += `\n\n[SwarmCode: skills that look relevant to this request: ${suggested.map((s) => s.name).join(", ")}. Load them with use_skill if they fit.]`;
+    // Strong matches are included directly (models often skip optional use_skill calls,
+    // and it saves a turn); weaker ones are offered as hints the agent may load.
+    const ranked = opts.skills?.length ? [] : rankSkills(prompt, this.skills, 3);
+    const included = ranked.filter((r) => r.score >= STRONG_SKILL_MATCH).slice(0, 2).map((r) => r.skill);
+    const hinted = ranked.map((r) => r.skill).filter((s) => !included.includes(s)).slice(0, 2);
+    if (included.length) {
+      fullPrompt += `\n\n[SwarmCode: playbooks for this request. Follow them where they apply.]\n${included.map((s) => `\n## ${s.name}\n${s.body.trim()}`).join("\n")}`;
+    }
+    if (hinted.length) {
+      fullPrompt += `\n\n[SwarmCode: other skills that may help: ${hinted.map((s) => s.name).join(", ")}. Load them with use_skill if they fit.]`;
     }
     const guarantee = opts.guarantee ?? this.cfg.hiddenTests === "always";
     this.audit?.record({ type: "request", mode: guarantee ? "agent+guarantee" : "agent", prompt });
@@ -695,6 +701,7 @@ export class Engine {
       usage,
       maxTurns: cfg.maxTurns,
       compactAt: cfg.compactAt,
+      contextBudget: cfg.contextBudget,
     });
   }
 

@@ -27,6 +27,12 @@ export interface SwarmCodeConfig {
   permission: "ask" | "auto";
   /** Fraction of the context window at which an agent compacts its history. */
   compactAt: number;
+  /**
+   * Context tokens at which an agent compacts even when the model's window is
+   * larger. Every turn resends the context, so a huge window used in full
+   * multiplies cost; recall keeps everything reachable after compaction.
+   */
+  contextBudget: number;
   maxTurns: number;
   /** MCP servers whose tools every agent can use. */
   mcpServers: Record<string, McpServerConfig>;
@@ -105,6 +111,7 @@ export function defaultConfig(): SwarmCodeConfig {
     maxParallel: 4,
     permission: "ask",
     compactAt: 0.8,
+    contextBudget: 160_000,
     maxTurns: 200,
     mcpServers: {},
     prices: {},
@@ -143,7 +150,7 @@ export function loadConfig(root: string): SwarmCodeConfig {
     if (layer.contextWindows) cfg.contextWindows = { ...cfg.contextWindows, ...layer.contextWindows };
     if (layer.mcpServers) cfg.mcpServers = { ...cfg.mcpServers, ...layer.mcpServers };
     if (layer.prices) cfg.prices = { ...cfg.prices, ...layer.prices };
-    for (const key of ["maxParallel", "verifyCommand", "permission", "compactAt", "maxTurns", "budgetUsd", "review", "securityGate", "bestOfModels", "audit", "hiddenTests", "councilModels", "trustedSkillKeys", "requireSignedSkills"] as const) {
+    for (const key of ["maxParallel", "verifyCommand", "permission", "compactAt", "contextBudget", "maxTurns", "budgetUsd", "review", "securityGate", "bestOfModels", "audit", "hiddenTests", "councilModels", "trustedSkillKeys", "requireSignedSkills"] as const) {
       if (layer[key] !== undefined) (cfg as unknown as Record<string, unknown>)[key] = layer[key];
     }
   }

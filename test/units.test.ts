@@ -7,6 +7,7 @@ import { validatePlan, type Plan } from "../src/swarm/planner.js";
 import { CORE_TOOLS, validateInput } from "../src/tools/index.js";
 import { clip, confine, globToRegExp } from "../src/util.js";
 import { resolveProject } from "../src/swarm/git.js";
+import { announcesNextStep } from "../src/agent/agent.js";
 import { execFileSync } from "node:child_process";
 
 test("globToRegExp", () => {
@@ -185,4 +186,11 @@ test("a folder inside a git repo at the home directory is its own project", asyn
     for (const [k, v] of Object.entries(saved)) v === undefined ? delete process.env[k] : (process.env[k] = v);
     fs.rmSync(home, { recursive: true, force: true });
   }
+});
+
+test("detects replies that stop while announcing a next step", () => {
+  for (const t of ["The error persists. Let's check the console.", "Done with the HTML.\nI'll now write the tests.", "Maybe the regex is wrong? Could use browser_console to check."])
+    assert.equal(announcesNextStep(t), true, t);
+  for (const t of ["All 12 checks pass. The login page is ready.", "I added validation. Let me know if you want a light theme.", "Which database do you use? Should I add Postgres?", ""])
+    assert.equal(announcesNextStep(t), false, t);
 });

@@ -113,6 +113,7 @@ export async function runBestOf(opts: BestOfOptions): Promise<BestOfResult> {
         usage,
         maxTurns: cfg.maxTurns,
         compactAt: cfg.compactAt,
+        contextBudget: cfg.contextBudget,
       });
       c.report = await agent.run(
         `# YOUR TASK (you are working alone on the complete task)\n${opts.goal}` +

@@ -7,8 +7,10 @@ import type {
   ToolCall,
   TurnHooks,
   TurnInput,
+  TrimPolicy,
   TurnResult,
 } from "./types.js";
+import { slimArgs } from "./types.js";
 
 // One adapter for every OpenAI-compatible endpoint: OpenAI, OpenRouter,
 // DeepSeek, Gemini, Groq, xAI, Mistral, Ollama, LM Studio, vLLM, ...
@@ -69,6 +71,32 @@ class OpenAISession implements ChatSession {
   importHistory(history: unknown[]): void {
     this.reset();
     this.messages.push(...(history as Msg[]));
+  }
+
+  trim(policy: TrimPolicy): number {
+    let removed = 0;
+    const results = this.messages.filter((m): m is OpenAI.Chat.ChatCompletionToolMessageParam => m.role === "tool");
+    for (const m of results.slice(0, Math.max(0, results.length - policy.keepRecent))) {
+      if (typeof m.content !== "string" || m.content.length <= policy.minChars) continue;
+      const stub = policy.result(m.tool_call_id, m.content);
+      removed += m.content.length - stub.length;
+      m.content = stub;
+    }
+    // Large arguments of older calls (e.g. a whole file passed to write_file).
+    const calls = this.messages.flatMap((m) => (m.role === "assistant" && m.tool_calls ? m.tool_calls : []));
+    for (const c of calls.slice(0, Math.max(0, calls.length - policy.keepRecent))) {
+      if (c.type !== "function" || c.function.arguments.length <= policy.minChars) continue;
+      try {
+        const slim = JSON.stringify(slimArgs(JSON.parse(c.function.arguments), policy.minChars));
+        if (slim.length < c.function.arguments.length) {
+          removed += c.function.arguments.length - slim.length;
+          c.function.arguments = slim;
+        }
+      } catch {
+        // Unparseable arguments are left alone.
+      }
+    }
+    return removed;
   }
 
   private request(input: TurnInput, signal?: AbortSignal) {

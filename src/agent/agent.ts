@@ -1,6 +1,6 @@
 import type { ChatSession, Effort, ModelHandle, ToolCall, ToolResult, TurnInput, TurnResult } from "../providers/types.js";
 import { describeCall, ToolError, validateInput, type Tool, type ToolContext } from "../tools/index.js";
-import { clip } from "../util.js";
+import { clip, confine } from "../util.js";
 import type { EventSink, UsageTracker } from "./events.js";
 import { Journal, makeRecallTool, offload } from "./journal.js";
 
@@ -16,6 +16,8 @@ export interface AgentOptions {
   maxTurns?: number;
   /** Fraction of the context window that triggers compaction. */
   compactAt?: number;
+  /** Compact before this many context tokens even when the window is larger. */
+  contextBudget?: number;
 }
 
 export interface AgentState {
@@ -26,6 +28,13 @@ export interface AgentState {
 }
 
 const MAX_TOOL_RESULT_CHARS = 40_000;
+
+// Older tool output is trimmed in batches once the context passes TRIM_AT
+// tokens; the newest TRIM_KEEP results stay whole. Batching keeps provider
+// prompt caches valid between trims.
+const TRIM_AT = 40_000;
+const TRIM_KEEP = 4;
+const TRIM_MIN_CHARS = 1_500;
 
 // Names that models (especially open-weight ones) commonly invent for our
 // tools. Mapping them is cheaper than a failed round trip.
@@ -84,6 +93,8 @@ export class Agent {
   /** Everything this agent saw and said, searchable with `recall` even after compaction. */
   private readonly journal = new Journal();
   private readonly tools: Tool[];
+  /** What each tool call was, so trimmed results can say how to recall them. */
+  private readonly calls = new Map<string, { name: string; summary: string; path?: string }>();
 
   constructor(private opts: AgentOptions) {
     this.name = opts.name;
@@ -111,6 +122,7 @@ export class Agent {
     this.requests = [];
     this.pending = [];
     this.lastContextTokens = 0;
+    this.calls.clear();
     this.ctx.readCache?.clear();
   }
 
@@ -135,6 +147,7 @@ export class Agent {
 
     let res = await this.turn({ text: prompt, toolResults: this.takePending() }, signal);
     let steps = 0;
+    let nudges = 0;
     const maxTurns = this.opts.maxTurns ?? 200;
 
     for (;;) {
@@ -145,6 +158,12 @@ export class Agent {
       if (!res.toolCalls.length) {
         if (res.stop === "max_tokens") {
           res = await this.turn({ text: "Your reply was cut off by the output limit. Continue exactly where you stopped." }, signal);
+          continue;
+        }
+        // Weaker models sometimes end a turn while announcing their next step.
+        if (nudges < 2 && announcesNextStep(res.text)) {
+          nudges++;
+          res = await this.turn({ text: "You described a next step but did not take it. Do it now with your tools, or finish with a short summary if the work is complete." }, signal);
           continue;
         }
         return res.text;
@@ -166,6 +185,7 @@ export class Agent {
           : await this.executeAll(res.toolCalls, ctx);
       this.pending = [];
 
+      this.trimOldOutput();
       if (this.overLimit()) {
         await this.compact(results, signal);
         res = await this.turn({ text: "Continue the task from the handoff summary above." }, signal);
@@ -183,7 +203,34 @@ export class Agent {
   }
 
   private overLimit() {
-    return this.lastContextTokens > (this.opts.compactAt ?? 0.8) * this.opts.model.contextWindow;
+    const limit = Math.min((this.opts.compactAt ?? 0.8) * this.opts.model.contextWindow, this.opts.contextBudget ?? Infinity);
+    return this.lastContextTokens > limit;
+  }
+
+  /**
+   * Replace large, older tool output with stubs. The full text stays in the
+   * journal (recall), and trimmed file reads are forgotten so a re-read
+   * returns the content instead of "unchanged".
+   */
+  private trimOldOutput() {
+    if (!this.session.trim || this.lastContextTokens < TRIM_AT) return;
+    const removed = this.session.trim({
+      keepRecent: TRIM_KEEP,
+      minChars: TRIM_MIN_CHARS,
+      result: (id, content) => {
+        const call = this.calls.get(id);
+        if (call?.path && this.ctx.readCache) {
+          for (const key of [...this.ctx.readCache.keys()]) if (key.startsWith(call.path + "|")) this.ctx.readCache.delete(key);
+        }
+        const what = call ? `${call.name} ${call.summary}`.trim() : "tool";
+        return `[Earlier output of ${what} (${content.length} chars) was cleared to save context. Call recall with a few words from it to see it again${call?.path ? ", or read the file again" : ""}.]`;
+      },
+    });
+    if (removed) {
+      const before = this.lastContextTokens;
+      this.lastContextTokens = Math.max(0, before - Math.round(removed / 4));
+      this.opts.events({ type: "trimmed", agent: this.name, before, after: this.lastContextTokens });
+    }
   }
 
   private async turn(input: TurnInput, signal?: AbortSignal): Promise<TurnResult> {
@@ -269,6 +316,15 @@ export class Agent {
     if (invalid) return fail(invalid);
 
     const summary = describeCall(call.name, call.input, ctx.root);
+    let path: string | undefined;
+    if (call.name === "read_file" && typeof call.input.path === "string") {
+      try {
+        path = confine(ctx.root, call.input.path);
+      } catch {
+        // Invalid paths fail in the tool itself.
+      }
+    }
+    this.calls.set(call.id, { name: call.name, summary, path });
     this.opts.events({ type: "tool", agent: this.name, name: call.name, summary });
     try {
       const out = await tool.run(call.input, ctx);
@@ -281,4 +337,11 @@ export class Agent {
       return fail(msg);
     }
   }
+}
+
+/** True when a reply ends by announcing an action instead of finishing ("Let's check the console."). */
+export function announcesNextStep(text: string): boolean {
+  const last = text.trim().split(/(?<=[.!?])\s+|\n+/).filter(Boolean).pop() ?? "";
+  if (/\blet me know\b|\bwould you like\b|\bdo you want\b|\bshould i\b/i.test(last)) return false;
+  return /^(let's|let us|let me|i'll|i will|i'm going to|next,? (i|we|let)|now (i|we|let)|we (should|need to|can) (now )?(check|test|run|fix|try|verify|look)|could (use|try|run|check)|maybe (we|i) (should|could)|need to (check|test|run|fix|verify))\b/i.test(last);
 }

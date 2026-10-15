@@ -103,9 +103,20 @@ async function snapshot(page: Page, maxChars = 12_000): Promise<string> {
 
 function locate(page: Page, input: Record<string, unknown>) {
   if (input.ref !== undefined) return page.locator(`[data-swarm-ref="${Number(input.ref)}"]`).first();
+  if (typeof input.label === "string") return page.getByLabel(input.label, { exact: false }).or(page.getByPlaceholder(input.label, { exact: false })).first();
   if (typeof input.text === "string") return page.getByText(input.text, { exact: false }).first();
   if (typeof input.selector === "string") return page.locator(input.selector).first();
-  throw new ToolError("Give ref (from browser_snapshot), text, or selector.");
+  throw new ToolError("Give ref (from browser_snapshot), label/text, or selector.");
+}
+
+/** For clicks by text, prefer a button or link with that name over other text (e.g. a heading). */
+async function clickTarget(page: Page, input: Record<string, unknown>) {
+  if (input.ref === undefined && typeof input.text === "string") {
+    const name = input.text;
+    const control = page.getByRole("button", { name }).or(page.getByRole("link", { name }));
+    if (await control.count()) return control.first();
+  }
+  return locate(page, input);
 }
 
 async function withPage<T>(ctx: ToolContext, fn: (s: Session) => Promise<T>): Promise<T> {
@@ -125,7 +136,7 @@ export const browserNavigate: Tool = {
   spec: {
     name: "browser_navigate",
     description:
-      "Open a URL in a headless browser (e.g. your local dev server at http://localhost:3000, or documentation). Returns the page's interactive elements (with refs for browser_click/browser_type) and text. Use it to test web apps you build: start the server with bash (background: true) first.",
+      "Open a URL in a headless browser (e.g. your local dev server at http://localhost:3000, or documentation). Returns the page's interactive elements (with refs for browser_click/browser_type) and text. Use it to test web apps you build: start the server with bash (background: true) first. Static HTML files can be opened directly as file:// URLs.",
     parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
   },
   async run(input, ctx) {
@@ -173,7 +184,7 @@ export const browserClick: Tool = {
   },
   async run(input, ctx) {
     return withPage(ctx, async (s) => {
-      await locate(s.page, input).click({ timeout: 10_000 });
+      await (await clickTarget(s.page, input)).click({ timeout: 10_000 });
       await s.page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
       return snapshot(s.page);
     });
@@ -184,17 +195,27 @@ export const browserType: Tool = {
   readOnly: false,
   spec: {
     name: "browser_type",
-    description: "Type into an input on the current page (by ref, text or selector). Set submit to press Enter afterwards. Never type real passwords or personal data; use test values.",
+    description:
+      "Type into an input on the current page. Find the field by ref from the last snapshot (preferred), its label/placeholder text, or a CSS selector. Set submit to press Enter afterwards. Never type real passwords or personal data; use test values.",
     parameters: {
       type: "object",
-      properties: { ref: { type: "integer" }, text: { type: "string" }, selector: { type: "string" }, value: { type: "string" }, submit: { type: "boolean" } },
-      required: ["value"],
+      properties: {
+        value: { type: "string", description: "The text to type." },
+        ref: { type: "integer" },
+        label: { type: "string", description: "The field's label or placeholder text." },
+        selector: { type: "string" },
+        submit: { type: "boolean" },
+      },
     },
   },
   async run(input, ctx) {
+    // Models often call the typed text "text"; accept it when there is no value.
+    const value = input.value ?? input.text;
+    if (value === undefined) return "Error: pass the text to type as value.";
+    const label = input.label ?? (input.value !== undefined ? input.text : undefined);
     return withPage(ctx, async (s) => {
-      const target = locate(s.page, { ref: input.ref, selector: input.selector, text: input.text });
-      await target.fill(String(input.value), { timeout: 10_000 });
+      const target = locate(s.page, { ref: input.ref, selector: input.selector, label });
+      await target.fill(String(value), { timeout: 10_000 });
       if (input.submit) {
         await target.press("Enter");
         await s.page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);

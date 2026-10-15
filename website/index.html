@@ -8,14 +8,15 @@
     <meta name="theme-color" content="#000000" />
     <meta property="og:title" content="SwarmCode · One prompt, a whole engineering team" />
     <meta property="og:description" content="Parallel AI agents that plan, build, test and review your code, with proof for every change." />
-    <meta property="og:image" content="/assets/og.png" />
+    <meta property="og:image" content="https://swarmcode.pages.dev/assets/og.png" />
+    <meta property="og:url" content="https://swarmcode.pages.dev/" />
+    <link rel="canonical" href="https://swarmcode.pages.dev/" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/icon-180.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/styles.css" />
     <script src="/config.js" defer></script>
     <script src="/main.js" defer></script>
@@ -36,7 +37,10 @@
           <a href="#faq">FAQ</a>
         </nav>
         <div class="nav-cta">
-          <a class="btn ghost repo-link" href="#" hidden>GitHub</a>
+          <a class="btn ghost gh" href="https://github.com/yogeshwardev/MYCODE" rel="noopener" aria-label="SwarmCode on GitHub">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.71 1.23 1.87.87 2.33.67.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+            <span>GitHub</span><span class="stars" id="stars" hidden></span>
+          </a>
           <a class="btn primary sm" href="/download" data-download>Download</a>
         </div>
       </div>
@@ -56,10 +60,17 @@
             </a>
             <a class="btn lg" href="#benchmarks">See the benchmarks</a>
           </div>
-          <p class="fine"><span data-size>101 MB</span> · Windows 10/11 · <code>npm i -g swarmcode</code> for the CLI on any OS</p>
+          <div class="install">
+            <span class="install-label">CLI · any OS</span>
+            <code id="install-cmd">npm i -g github:yogeshwardev/MYCODE</code>
+            <button type="button" class="copy" id="copy-install" aria-label="Copy install command">Copy</button>
+          </div>
+          <p class="fine">Windows app <span data-size>101 MB</span> · Windows 10/11 · open source, <a href="https://github.com/yogeshwardev/MYCODE">read the code</a></p>
           <div class="stats" id="stats">
-            <div><b id="stat-tokens">Lean</b><span id="stat-tokens-label">context: journals and recall instead of re-reading</span></div>
-            <div><b id="stat-pass">12</b><span id="stat-pass-label">real tasks graded by hidden tests</span></div>
+<!-- stats:start -->
+<div><b>Lean</b><span>context: journals and recall instead of re-reading</span></div>
+<div><b>10/12</b><span>real tasks passed, graded by hidden tests (SwarmCode · Agent)</span></div>
+<!-- stats:end -->
             <div><b>Any</b><span>model: cloud, local or free</span></div>
             <div><b>35</b><span>expert skills, picked for you</span></div>
           </div>
@@ -183,22 +194,22 @@
           <p class="sub">Every agent can write code. SwarmCode is built to <em>finish</em> the job and prove it.</p>
           <div class="cmp-wrap">
             <table class="cmp">
-              <thead><tr><th></th><th class="us">SwarmCode</th><th>Claude Code</th><th>Codex CLI</th><th>opencode</th><th>Cursor</th></tr></thead>
+              <thead><tr><th></th><th class="us">SwarmCode</th><th><a href="https://code.claude.com/docs/en/overview" rel="noopener">Claude Code</a></th><th><a href="https://developers.openai.com/codex/cli" rel="noopener">Codex CLI</a></th><th><a href="https://opencode.ai/docs" rel="noopener">opencode</a></th><th><a href="https://docs.cursor.com" rel="noopener">Cursor</a></th></tr></thead>
               <tbody>
-                <tr><th scope="row">Splits one task across parallel agents, then merges, tests and reviews automatically</th><td class="y">✓</td><td class="p">Subagents you direct</td><td class="p">Parallel tasks, you merge</td><td class="p">Subagents you direct</td><td class="p">Parallel agents, you pick</td></tr>
-                <tr><th scope="row">Hidden acceptance tests written before the code</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
-                <tr><th scope="row">Independent reviewer and security gate before you see the diff</th><td class="y">✓</td><td class="p">Commands you run</td><td class="p">Command you run</td><td class="n">✗</td><td class="p">Separate review tool</td></tr>
-                <tr><th scope="row">Best of 3 across different models, graded automatically</th><td class="y">✓</td><td class="n">✗</td><td class="p">Multiple attempts, you pick</td><td class="n">✗</td><td class="p">Compare models, you pick</td></tr>
-                <tr><th scope="row">Proof report with every check, cost and token count</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
-                <tr><th scope="row">Repo health scan with one-click fixes</th><td class="y">✓</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td></tr>
-                <tr><th scope="row">Works with any model and your own keys</th><td class="y">✓</td><td class="p">Claude models</td><td class="p">OpenAI + local</td><td class="y">✓</td><td class="p">Its model list</td></tr>
-                <tr><th scope="row">Free local models (Ollama)</th><td class="y">✓</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td></tr>
-                <tr><th scope="row">Open source</th><td class="y">✓</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td></tr>
-                <tr><th scope="row">Price</th><td class="y">Free + your model</td><td class="p">Subscription or API</td><td class="p">ChatGPT plan or API</td><td class="y">Free + your model</td><td class="p">Subscription</td></tr>
+                <tr><th scope="row">Splits one task across parallel agents, then merges, tests and reviews automatically</th><td class="y">✓</td><td class="p">◐ <span>Subagents you direct</span></td><td class="p">◐ <span>Parallel tasks, you merge</span></td><td class="p">◐ <span>Subagents you direct</span></td><td class="p">◐ <span>Parallel agents, you pick</span></td></tr>
+                <tr><th scope="row">Hidden acceptance tests written before the code</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td></tr>
+                <tr><th scope="row">Independent reviewer and security gate before you see the diff</th><td class="y">✓</td><td class="p">◐ <span>/security-review and hooks, set up by you</span></td><td class="p">◐ <span>/review, run by you</span></td><td class="p">◐ <span>Custom commands</span></td><td class="p">◐ <span>Bugbot, a separate product</span></td></tr>
+                <tr><th scope="row">Best of 3 across different models, graded automatically</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="p">◐ <span>Multiple attempts in the cloud, you pick</span></td><td class="n">✗ <span>not built in</span></td><td class="p">◐ <span>Compare models, you pick</span></td></tr>
+                <tr><th scope="row">Proof report with every check, cost and token count</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td></tr>
+                <tr><th scope="row">Repo health scan with one-click fixes</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td><td class="n">✗ <span>not built in</span></td></tr>
+                <tr><th scope="row">Works with any model and your own keys</th><td class="y">✓</td><td class="p">◐ <span>Claude models; others via gateways</span></td><td class="p">◐ <span>OpenAI models; local via --oss</span></td><td class="y">✓</td><td class="p">◐ <span>Its supported models</span></td></tr>
+                <tr><th scope="row">Free local models (Ollama)</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="y">✓</td><td class="y">✓</td><td class="n">✗ <span>not built in</span></td></tr>
+                <tr><th scope="row">Open source</th><td class="y">✓</td><td class="n">✗ <span>not built in</span></td><td class="y">✓</td><td class="y">✓</td><td class="n">✗ <span>not built in</span></td></tr>
+                <tr><th scope="row">Price</th><td class="y">Free + your model</td><td class="p">◐ <span>Subscription or API</span></td><td class="p">◐ <span>ChatGPT plan or API</span></td><td class="y">Free + your model</td><td class="p">◐ <span>Subscription</span></td></tr>
               </tbody>
             </table>
           </div>
-          <p class="fine left">✓ built in · <span class="p-dot">partial</span> available with manual steps or limits · ✗ not built in. Based on each product's public documentation as of October 2026. Products change quickly; <a class="repo-issues" href="https://github.com/yogeshwardev/MYCODE/issues">tell us</a> if something is out of date.</p>
+          <p class="fine left">✓ built in · ◐ partly available: needs manual steps, setup or a separate product · ✗ not built in (you could still ask the agent to do it by hand). Column headers link to each product's documentation; checked October 2026. Products change quickly, so <a href="https://github.com/yogeshwardev/MYCODE/issues">tell us</a> if something is out of date and we'll fix it.</p>
         </div>
       </section>
 
@@ -208,14 +219,13 @@
           <p class="kicker">The app</p>
           <h2>Calm enough to work in all day.</h2>
           <div class="tabs" role="tablist" aria-label="Screenshots">
-            <button role="tab" aria-selected="true" data-shot="agents">Live agents</button>
-            <button role="tab" aria-selected="false" data-shot="review">Review and apply</button>
+            <button role="tab" aria-selected="true" data-shot="review">Review and apply</button>
             <button role="tab" aria-selected="false" data-shot="commands">/ commands</button>
             <button role="tab" aria-selected="false" data-shot="health">Health radar</button>
             <button role="tab" aria-selected="false" data-shot="welcome">Welcome</button>
           </div>
           <figure class="shot">
-            <img id="shot" src="/assets/agents.png" alt="SwarmCode screenshot" width="1858" height="976" loading="lazy" />
+            <img id="shot" src="/assets/review.png" alt="SwarmCode: Review and apply" width="1858" height="976" loading="lazy" />
           </figure>
         </div>
       </section>
@@ -226,15 +236,76 @@
           <p class="kicker">Benchmarks</p>
           <h2>Measured, not claimed.</h2>
           <p class="sub" id="bench-intro">Twelve realistic tasks, from small bug fixes to multi-feature builds, graded by hidden acceptance tests the agents never see. Every tool ran the same model.</p>
-          <div id="bench-cards" class="bench-cards"></div>
-          <div class="bench-table-wrap">
-            <table class="bench-table" id="bench-table">
-              <caption class="sr-only">Results per task</caption>
-            </table>
-          </div>
-          <div class="bench-notes">
-            <p id="bench-meta"></p>
-            <p>How it works: each task starts from a fresh copy of a small real-world project. When an agent finishes, hidden tests are copied in and run; pass means every requirement works. One run per task and tool, so treat small differences as noise. The harness is open source, so you can run it on your own models: <code>npm run bench -- --external "name=your-cli {prompt}"</code>.</p>
+<!-- bench:start -->
+<p class="bench-headline">Tasks passed, same model (gpt-oss:120b via Ollama Cloud): <b>SwarmCode · Agent 10/12</b> · <b>SwarmCode · Swarm 9/12</b> · <b>Codex CLI 11/12</b> · <b>opencode 6/12</b>.</p>
+<div id="bench-cards" class="bench-cards">
+<div class="bcard us">
+  <div class="name"><span>SwarmCode · Agent</span><span class="tag">ours</span></div>
+  <div class="big">10<small> / 12 passed</small></div>
+  <div class="bar"><i style="width:83%"></i></div>
+  <dl>
+    <dt>Avg time</dt><dd>1m 40s</dd>
+    <dt>Median tokens</dt><dd>172k</dd>
+    <dt>Small tasks</dt><dd>3/4</dd><dt>Medium tasks</dt><dd>3/4</dd><dt>Large tasks</dt><dd>4/4</dd>
+  </dl>
+</div>
+<div class="bcard us">
+  <div class="name"><span>SwarmCode · Swarm</span><span class="tag">ours</span></div>
+  <div class="big">9<small> / 12 passed</small></div>
+  <div class="bar"><i style="width:75%"></i></div>
+  <dl>
+    <dt>Avg time</dt><dd>4m 21s</dd>
+    <dt>Median tokens</dt><dd>387k</dd>
+    <dt>Small tasks</dt><dd>4/4</dd><dt>Medium tasks</dt><dd>2/4</dd><dt>Large tasks</dt><dd>3/4</dd>
+  </dl>
+</div>
+<div class="bcard">
+  <div class="name"><span>Codex CLI</span></div>
+  <div class="big">11<small> / 12 passed</small></div>
+  <div class="bar"><i style="width:92%"></i></div>
+  <dl>
+    <dt>Avg time</dt><dd>2m 53s</dd>
+    <dt>Median tokens</dt><dd>442k</dd>
+    <dt>Small tasks</dt><dd>4/4</dd><dt>Medium tasks</dt><dd>4/4</dd><dt>Large tasks</dt><dd>3/4</dd>
+  </dl>
+</div>
+<div class="bcard">
+  <div class="name"><span>opencode</span></div>
+  <div class="big">6<small> / 12 passed</small></div>
+  <div class="bar"><i style="width:50%"></i></div>
+  <dl>
+    <dt>Avg time</dt><dd>1m 2s</dd>
+    <dt>Median tokens</dt><dd>not reported</dd>
+    <dt>Small tasks</dt><dd>4/4</dd><dt>Medium tasks</dt><dd>1/4</dd><dt>Large tasks</dt><dd>1/4</dd>
+  </dl>
+</div>
+</div>
+<div class="bench-table-wrap">
+<table class="bench-table" id="bench-table">
+  <caption class="sr-only">Results per task</caption>
+  <thead><tr><th>Task</th><th>SwarmCode · Agent</th><th>SwarmCode · Swarm</th><th>Codex CLI</th><th>opencode</th></tr></thead>
+  <tbody>
+    <tr><td class="task">Fix a date bug<span class="cat">small</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">10s · 29k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">27s · 32k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 57s · 158k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">33s</span></td></tr>
+    <tr><td class="task">Fix cents rounding<span class="cat">small</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">51s · 119k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 8s · 78k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 38s · 254k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 6s</span></td></tr>
+    <tr><td class="task">Email validation<span class="cat">small</span></td><td class="res"><span class="no">✗ fail</span><span class="t">1m 28s · 174k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 55s · 205k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 11s · 458k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">53s</span></td></tr>
+    <tr><td class="task">Rename across codebase<span class="cat">small</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">24s · 100k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 21s · 126k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 31s · 311k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 11s</span></td></tr>
+    <tr><td class="task">Functions across 3 modules<span class="cat">medium</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 8s · 169k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">3m 58s · 660k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 56s · 404k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">37s</span></td></tr>
+    <tr><td class="task">Pagination + callers<span class="cat">medium</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 36s · 908k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">5m 19s · 885k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 36s · 430k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 45s</span></td></tr>
+    <tr><td class="task">CSV export<span class="cat">medium</span></td><td class="res"><span class="no">✗ fail</span><span class="t">1m 8s · 144k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">1m 25s · 94k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 47s · 490k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">21s</span></td></tr>
+    <tr><td class="task">Stock + cancellations<span class="cat">medium</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 13s · 313k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">4m 14s · 324k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">3m 37s · 572k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">24s</span></td></tr>
+    <tr><td class="task">4 store features<span class="cat">large</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 20s · 309k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">6m 19s · 757k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">3m 7s · 500k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 12s</span></td></tr>
+    <tr><td class="task">4 data structures<span class="cat">large</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">1m 39s · 313k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">8m 16s · 1.4M tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">2m 30s · 400k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">15s</span></td></tr>
+    <tr><td class="task">8 utility functions<span class="cat">large</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">7m 22s · 2.2M tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">4m 43s · 451k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">3m 30s · 454k tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">43s</span></td></tr>
+    <tr><td class="task">3-report module<span class="cat">large</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">43s · 133k tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">12m 9s · 1.9M tok</span></td><td class="res"><span class="ok">✓ pass</span><span class="t">5m 17s · 1.2M tok</span></td><td class="res"><span class="no">✗ fail</span><span class="t">1m 22s</span></td></tr>
+  </tbody>
+</table>
+</div>
+<p class="bench-cost"><b>What it costs:</b> a typical medium task used about 241k tokens in agent mode. That is roughly $0.56 at Sonnet-class API prices before prompt caching (caching lowers it), and $0 with local models through Ollama. Swarm and best-of-3 modes use more; SwarmCode shows the estimate and asks before using them.</p>
+<div class="bench-notes">
+<p>Model for every tool: <b>gpt-oss:120b via Ollama Cloud</b>. Run on October 15, 2026. One run per task and tool, same model for every tool, graded by hidden acceptance tests the agents never saw. Single runs vary, so treat small differences as noise. Token counts are shown where a tool reports them; opencode does not.</p>
+<!-- bench:end -->
+            <p>These results are from SwarmCode 1.0.0. Since then, agents trim old tool output from their context: re-running the two most token-heavy tasks in agent mode used 590k–879k tokens instead of 2.18M (8 utility functions) and 125k–234k instead of 313k (4 data structures), with the same pass results. A full re-run with several runs per task is next.</p>
+            <p>How it works: each task starts from a fresh copy of a small real-world project. When an agent finishes, hidden tests are copied in and run; pass means every requirement works. The harness is open source, so you can run it on your own models: <code>npm run bench -- --external "name=your-cli {prompt}"</code>.</p>
           </div>
         </div>
       </section>
@@ -302,9 +373,17 @@
     </main>
 
     <footer class="footer">
-      <div class="wrap footer-inner">
-        <span>© <span id="year">2026</span> SwarmCode contributors · Apache-2.0</span>
-        <span class="links"><a href="#benchmarks">Benchmarks</a><a href="#faq">FAQ</a><a class="repo-link" href="#" hidden>GitHub</a></span>
+      <div class="wrap footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="20" height="20" /><span>SwarmCode</span></a>
+          <p>© 2026 SwarmCode contributors. Software licensed under <a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">Apache-2.0</a>.</p>
+          <p class="tm">Claude, GPT, Codex, Gemini, Cursor, opencode and other product names are trademarks of their respective owners, used only to identify those products. SwarmCode is not affiliated with or endorsed by them.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <div><h4>Product</h4><a href="/download">Download</a><a href="/#features">Features</a><a href="/#benchmarks">Benchmarks</a><a href="/#faq">FAQ</a></div>
+          <div><h4>Open source</h4><a href="https://github.com/yogeshwardev/MYCODE">GitHub</a><a href="https://github.com/yogeshwardev/MYCODE/releases">Releases</a><a href="https://github.com/yogeshwardev/MYCODE/issues">Report an issue</a><a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">License</a></div>
+          <div><h4>Legal</h4><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/terms">Terms</a><a href="/security">Security</a></div>
+        </nav>
       </div>
     </footer>
   </body>

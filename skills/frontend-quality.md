@@ -1,7 +1,7 @@
 ---
 name: frontend-quality
 description: Build or review web UI with production quality - accessibility (WCAG 2.2 AA), responsive layout, performance, state handling and security.
-triggers: ui, frontend, component, css, react, vue, svelte, accessib, a11y, wcag, responsive, layout
+triggers: ui, frontend, component, css, html, react, vue, svelte, next.js, accessib, a11y, wcag, responsive, layout, page, form, login, sign in, signup, sign up, button, modal, navbar
 ---
 1. **Match the stack and design system** in use (framework, component library, CSS approach, tokens). Reuse existing components before creating new ones.
 2. **Accessibility (WCAG 2.2 AA)**: semantic HTML first (button, nav, main, label), every input labelled, images with meaningful `alt` (empty for decorative), keyboard operable with a visible focus ring, logical focus order and focus management in dialogs, color contrast >= 4.5:1 for text, no information conveyed by color alone, `prefers-reduced-motion` respected, ARIA only when native semantics are insufficient.

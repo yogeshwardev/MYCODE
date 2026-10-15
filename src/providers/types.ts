@@ -66,6 +66,28 @@ export interface ChatSession {
   /** Serializable copy of the native history, for saving and resuming sessions. */
   exportHistory(): unknown[];
   importHistory(history: unknown[]): void;
+  /**
+   * Shrink older tool traffic in place: large tool results (and, where the
+   * provider allows, large tool-call arguments) outside the most recent
+   * `keepRecent` are replaced with short stubs. Returns the characters removed.
+   */
+  trim?(policy: TrimPolicy): number;
+}
+
+export interface TrimPolicy {
+  keepRecent: number;
+  minChars: number;
+  /** The stub that replaces an old tool result. */
+  result(callId: string, content: string): string;
+}
+
+/** Tool-call arguments with long string values replaced by a size note. */
+export function slimArgs(input: Record<string, unknown>, minChars: number): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input)) {
+    out[k] = typeof v === "string" && v.length > minChars ? `[${v.length} characters omitted to save context]` : v;
+  }
+  return out;
 }
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";

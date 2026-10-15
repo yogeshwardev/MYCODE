@@ -1,0 +1,528 @@
+{
+  "generatedAt": "2026-10-15T14:38:08.611Z",
+  "model": "gpt-oss:120b via Ollama Cloud",
+  "note": "One run per task and tool, same model for every tool, graded by hidden acceptance tests the agents never saw. Single runs vary, so treat small differences as noise.",
+  "runsPerTask": 1,
+  "runners": [
+    {
+      "runner": "swarmcode:agent",
+      "name": "SwarmCode · Agent",
+      "passed": 10,
+      "total": 12,
+      "avgSeconds": 100.26666666666667,
+      "medianTokens": 171500,
+      "tokensReported": true,
+      "byCategory": {
+        "small": {
+          "passed": 3,
+          "total": 4
+        },
+        "medium": {
+          "passed": 3,
+          "total": 4
+        },
+        "large": {
+          "passed": 4,
+          "total": 4
+        }
+      }
+    },
+    {
+      "runner": "swarmcode:swarm",
+      "name": "SwarmCode · Swarm",
+      "passed": 9,
+      "total": 12,
+      "avgSeconds": 261.0083333333333,
+      "medianTokens": 387360,
+      "tokensReported": true,
+      "byCategory": {
+        "small": {
+          "passed": 4,
+          "total": 4
+        },
+        "medium": {
+          "passed": 2,
+          "total": 4
+        },
+        "large": {
+          "passed": 3,
+          "total": 4
+        }
+      }
+    },
+    {
+      "runner": "codex",
+      "name": "Codex CLI",
+      "passed": 11,
+      "total": 12,
+      "avgSeconds": 173.04999999999995,
+      "medianTokens": 442098.5,
+      "tokensReported": true,
+      "byCategory": {
+        "small": {
+          "passed": 4,
+          "total": 4
+        },
+        "medium": {
+          "passed": 4,
+          "total": 4
+        },
+        "large": {
+          "passed": 3,
+          "total": 4
+        }
+      }
+    },
+    {
+      "runner": "opencode",
+      "name": "opencode",
+      "passed": 6,
+      "total": 12,
+      "avgSeconds": 61.866666666666674,
+      "medianTokens": null,
+      "tokensReported": false,
+      "byCategory": {
+        "small": {
+          "passed": 4,
+          "total": 4
+        },
+        "medium": {
+          "passed": 1,
+          "total": 4
+        },
+        "large": {
+          "passed": 1,
+          "total": 4
+        }
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "mini-fix-bug",
+      "title": "Fix a date bug",
+      "category": "small",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 10,
+          "tokens": 29000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 27,
+          "tokens": 32000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 117,
+          "tokens": 158000
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 33,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-discount-bug",
+      "title": "Fix cents rounding",
+      "category": "small",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 51,
+          "tokens": 119000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 68,
+          "tokens": 78000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 98,
+          "tokens": 254000
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 126,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-email-validation",
+      "title": "Email validation",
+      "category": "small",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 88,
+          "tokens": 174000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 175,
+          "tokens": 205000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 131,
+          "tokens": 458000
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 53,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-rename",
+      "title": "Rename across codebase",
+      "category": "small",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 24,
+          "tokens": 100000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 81,
+          "tokens": 126000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 151,
+          "tokens": 311000
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 71,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "mini-multi-module",
+      "title": "Functions across 3 modules",
+      "category": "medium",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 68,
+          "tokens": 169000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 238,
+          "tokens": 660000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 176,
+          "tokens": 404000
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 37,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-pagination",
+      "title": "Pagination + callers",
+      "category": "medium",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 156,
+          "tokens": 908000
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 319,
+          "tokens": 885000
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 156,
+          "tokens": 430000
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 105,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-orders-csv",
+      "title": "CSV export",
+      "category": "medium",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 68,
+          "tokens": 144043
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 85,
+          "tokens": 94230
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 167,
+          "tokens": 490067
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 21,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-inventory",
+      "title": "Stock + cancellations",
+      "category": "medium",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 73,
+          "tokens": 312501
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 254,
+          "tokens": 323512
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 217,
+          "tokens": 572053
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 24,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-four-features",
+      "title": "4 store features",
+      "category": "large",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 80,
+          "tokens": 308658
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 379,
+          "tokens": 756784
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 187,
+          "tokens": 500266
+        },
+        {
+          "runner": "opencode",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 132,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "ds-four-structures",
+      "title": "4 data structures",
+      "category": "large",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 99,
+          "tokens": 313203
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 496,
+          "tokens": 1426776
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 150,
+          "tokens": 399650
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 15,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "utils-eight-functions",
+      "title": "8 utility functions",
+      "category": "large",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 442,
+          "tokens": 2182420
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 283,
+          "tokens": 451208
+        },
+        {
+          "runner": "codex",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 210,
+          "tokens": 454197
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 43,
+          "tokens": null
+        }
+      ]
+    },
+    {
+      "id": "shop-reports",
+      "title": "3-report module",
+      "category": "large",
+      "results": [
+        {
+          "runner": "swarmcode:agent",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 43,
+          "tokens": 132638
+        },
+        {
+          "runner": "swarmcode:swarm",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 729,
+          "tokens": 1900654
+        },
+        {
+          "runner": "codex",
+          "passed": 1,
+          "runs": 1,
+          "seconds": 317,
+          "tokens": 1176778
+        },
+        {
+          "runner": "opencode",
+          "passed": 0,
+          "runs": 1,
+          "seconds": 82,
+          "tokens": null
+        }
+      ]
+    }
+  ],
+  "mediumTokens": 240750.5,
+  "mediumCostUsd": 0.5585411599999999,
+  "tokenRatio": {
+    "ratio": 1.1462551684090405,
+    "name": "SwarmCode · Agent"
+  }
+}

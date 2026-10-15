@@ -97,6 +97,14 @@ const words = (t: string) => t.toLowerCase().split(/[^a-z0-9+#.]+/).filter((w) =
  * it runs on every request; the agent still decides whether to load them.
  */
 export function suggestSkills(request: string, skills: Skill[], max = 2): Skill[] {
+  return rankSkills(request, skills, max).map((x) => x.skill);
+}
+
+/** A score at which a skill clearly fits the request (e.g. two trigger words). */
+export const STRONG_SKILL_MATCH = 7;
+
+/** Skills matching a request, best first, with a score (trigger phrase 4, trigger word 3, shared word 1). */
+export function rankSkills(request: string, skills: Skill[], max = 2): Array<{ skill: Skill; score: number }> {
   const text = ` ${request.toLowerCase().replace(/\s+/g, " ")} `;
   const reqWords = new Set(words(request));
   const scored = skills.map((s) => {
@@ -109,5 +117,5 @@ export function suggestSkills(request: string, skills: Skill[], max = 2): Skill[
     .filter((x) => x.score >= 3)
     .sort((a, b) => b.score - a.score)
     .slice(0, max)
-    .map((x) => x.s);
+    .map((x) => ({ skill: x.s, score: x.score }));
 }

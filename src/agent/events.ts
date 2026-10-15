@@ -8,7 +8,8 @@ export type AgentEvent =
   | { type: "tool"; agent: string; name: string; summary: string }
   | { type: "tool_error"; agent: string; name: string; error: string }
   | { type: "status"; agent: string; message: string }
-  | { type: "compacted"; agent: string; before: number; after: number };
+  | { type: "compacted"; agent: string; before: number; after: number }
+  | { type: "trimmed"; agent: string; before: number; after: number };
 
 export type EventSink = (e: AgentEvent) => void;
 

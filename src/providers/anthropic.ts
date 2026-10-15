@@ -7,6 +7,7 @@ import type {
   ToolCall,
   TurnHooks,
   TurnInput,
+  TrimPolicy,
   TurnResult,
 } from "./types.js";
 
@@ -72,6 +73,24 @@ class AnthropicSession implements ChatSession {
 
   importHistory(history: unknown[]): void {
     this.messages = history as Anthropic.Beta.BetaMessageParam[];
+  }
+
+  // Only tool results are trimmed: assistant turns (tool inputs next to
+  // thinking blocks) are left exactly as the model produced them.
+  trim(policy: TrimPolicy): number {
+    const results: Anthropic.Beta.BetaToolResultBlockParam[] = [];
+    for (const m of this.messages) {
+      if (m.role !== "user" || !Array.isArray(m.content)) continue;
+      for (const b of m.content) if (b.type === "tool_result") results.push(b);
+    }
+    let removed = 0;
+    for (const b of results.slice(0, Math.max(0, results.length - policy.keepRecent))) {
+      if (typeof b.content !== "string" || b.content.length <= policy.minChars) continue;
+      const stub = policy.result(b.tool_use_id, b.content);
+      removed += b.content.length - stub.length;
+      b.content = stub;
+    }
+    return removed;
   }
 
   async turn(input: TurnInput, hooks: TurnHooks = {}): Promise<TurnResult> {

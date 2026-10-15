@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy policy · SwarmCode</title>
+    <meta name="description" content="How SwarmCode handles data: no accounts on our servers, no telemetry, no tracking." />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="24" height="24" /><span>SwarmCode</span></a>
+        <div class="nav-cta"><a class="btn primary sm" href="/download">Download</a></div>
+      </div>
+    </header>
+    <main class="legal">
+      <div class="wrap">
+        <p class="kicker">Legal</p>
+        <h1>Privacy policy</h1>
+        <p class="updated">Last updated October 15, 2026</p>
+<p class="lede-s">Short version: SwarmCode runs on your computer. We don't run servers that receive your code, prompts or personal data, and we don't track you.</p>
+
+<h2>Who we are</h2>
+<p>SwarmCode is an open-source project maintained by its contributors. You can reach us through <a href="https://github.com/yogeshwardev/MYCODE/issues">GitHub issues</a>. For anything sensitive, use a <a href="https://github.com/yogeshwardev/MYCODE/security/advisories/new">private security advisory</a>.</p>
+
+<h2>This website</h2>
+<ul>
+  <li><b>Hosting.</b> The site is served by Cloudflare Pages. Like any web host, Cloudflare processes technical request data (such as IP address, browser type and the page requested) to deliver and protect the site. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.</li>
+  <li><b>No analytics, ads or trackers.</b> We don't use analytics tools, advertising, tracking pixels or fingerprinting, and the site sets no cookies. Fonts and images are served from this site, not from third parties.</li>
+  <li><b>GitHub star count.</b> The home page asks GitHub's public API for the project's star count, so GitHub sees that request from your browser. See <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.</li>
+  <li><b>Downloads.</b> The installer is hosted on GitHub Releases, so downloading it is a request to GitHub.</li>
+</ul>
+
+<h2>The SwarmCode app and CLI</h2>
+<ul>
+  <li><b>Runs locally.</b> The app and the command-line tool run on your machine. There is no SwarmCode cloud service.</li>
+  <li><b>Your code goes only where you send it.</b> To do its work, SwarmCode sends your prompts and the parts of your code an agent reads to the AI model provider you configure (for example Anthropic, OpenAI, Google, OpenRouter or DeepSeek), under that provider's own terms and privacy policy. With local models (for example through Ollama), nothing leaves your computer.</li>
+  <li><b>No telemetry.</b> SwarmCode doesn't collect usage statistics, crash reports or analytics.</li>
+  <li><b>API keys</b> stay on your device: in your environment variables, or encrypted with your operating system's keychain in the desktop app. They are sent only to the provider they belong to.</li>
+  <li><b>Sign in with GitHub or Google</b> (optional, desktop app). Sign-in happens directly between the app and GitHub or Google. The app stores the resulting token encrypted on your device and uses your name and avatar only to show who is signed in. We don't receive this data. You can sign out at any time in Settings.</li>
+  <li><b>Local files.</b> Sessions, proof reports and audit trails are saved in your project's <code>.swarmcode</code> folder and in <code>~/.swarmcode</code>. Delete those folders to remove them.</li>
+  <li><b>Web access.</b> When an agent fetches a web page or tests your site in a browser, those requests go from your computer to the sites involved.</li>
+</ul>
+
+<h2>Your rights</h2>
+<p>Because we don't collect or store personal data, there is nothing for us to access, correct or delete. For data handled by Cloudflare, GitHub, Google or your AI provider, contact them directly using the links above.</p>
+
+<h2>Children</h2>
+<p>SwarmCode is a developer tool and isn't directed at children under 16.</p>
+
+<h2>Changes</h2>
+<p>If this policy changes, we'll update this page and the date below. Its full history is public in the <a href="https://github.com/yogeshwardev/MYCODE/commits/main/website/privacy.html">project repository</a>.</p>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="wrap footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="20" height="20" /><span>SwarmCode</span></a>
+          <p>© 2026 SwarmCode contributors. Software licensed under <a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">Apache-2.0</a>.</p>
+          <p class="tm">Claude, GPT, Codex, Gemini, Cursor, opencode and other product names are trademarks of their respective owners, used only to identify those products. SwarmCode is not affiliated with or endorsed by them.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <div><h4>Product</h4><a href="/download">Download</a><a href="/#features">Features</a><a href="/#benchmarks">Benchmarks</a><a href="/#faq">FAQ</a></div>
+          <div><h4>Open source</h4><a href="https://github.com/yogeshwardev/MYCODE">GitHub</a><a href="https://github.com/yogeshwardev/MYCODE/releases">Releases</a><a href="https://github.com/yogeshwardev/MYCODE/issues">Report an issue</a><a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">License</a></div>
+          <div><h4>Legal</h4><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/terms">Terms</a><a href="/security">Security</a></div>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

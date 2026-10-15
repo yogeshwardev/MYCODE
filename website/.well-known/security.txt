@@ -1,0 +1,4 @@
+Contact: https://github.com/yogeshwardev/MYCODE/security/advisories/new
+Expires: 2027-10-15T00:00:00.000Z
+Policy: https://github.com/yogeshwardev/MYCODE/blob/main/SECURITY.md
+Preferred-Languages: en

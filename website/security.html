@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Security · SwarmCode</title>
+    <meta name="description" content="How to report a security issue in SwarmCode." />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="24" height="24" /><span>SwarmCode</span></a>
+        <div class="nav-cta"><a class="btn primary sm" href="/download">Download</a></div>
+      </div>
+    </header>
+    <main class="legal">
+      <div class="wrap">
+        <p class="kicker">Legal</p>
+        <h1>Security</h1>
+        <p class="updated">Last updated October 15, 2026</p>
+<p class="lede-s">We take security seriously and appreciate responsible disclosure.</p>
+
+<h2>Report a vulnerability</h2>
+<p>Please report security issues privately through a <a href="https://github.com/yogeshwardev/MYCODE/security/advisories/new">GitHub security advisory</a>, not in public issues. Include the version, steps to reproduce and the impact you expect. We aim to acknowledge reports within 3 business days.</p>
+
+<h2>Verify your download</h2>
+<p>Every release lists the SHA-256 checksum of the installer. On Windows, compare it with:</p>
+<pre><code>Get-FileHash .\SwarmCode-Setup-*.exe -Algorithm SHA256</code></pre>
+<p>Only download SwarmCode from this site or the project's <a href="https://github.com/yogeshwardev/MYCODE/releases">GitHub releases</a>. Early Windows builds aren't code-signed yet; signed builds are planned.</p>
+
+<h2>How SwarmCode protects you</h2>
+<ul>
+  <li>Edits and commands need your approval unless you turn on autonomous mode.</li>
+  <li>Agents work in isolated git worktrees; changes reach your files only when you apply them.</li>
+  <li>A security gate checks each change for new secrets, injection risks and unsafe settings.</li>
+  <li>Content from web pages and files is treated as data, never as instructions.</li>
+  <li>The desktop app runs its interface sandboxed, with context isolation and a strict content security policy.</li>
+</ul>
+<p>More detail is in the project's <a href="https://github.com/yogeshwardev/MYCODE/blob/main/SECURITY.md">security policy</a>.</p>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="wrap footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="20" height="20" /><span>SwarmCode</span></a>
+          <p>© 2026 SwarmCode contributors. Software licensed under <a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">Apache-2.0</a>.</p>
+          <p class="tm">Claude, GPT, Codex, Gemini, Cursor, opencode and other product names are trademarks of their respective owners, used only to identify those products. SwarmCode is not affiliated with or endorsed by them.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <div><h4>Product</h4><a href="/download">Download</a><a href="/#features">Features</a><a href="/#benchmarks">Benchmarks</a><a href="/#faq">FAQ</a></div>
+          <div><h4>Open source</h4><a href="https://github.com/yogeshwardev/MYCODE">GitHub</a><a href="https://github.com/yogeshwardev/MYCODE/releases">Releases</a><a href="https://github.com/yogeshwardev/MYCODE/issues">Report an issue</a><a href="https://github.com/yogeshwardev/MYCODE/blob/main/LICENSE">License</a></div>
+          <div><h4>Legal</h4><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/terms">Terms</a><a href="/security">Security</a></div>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
