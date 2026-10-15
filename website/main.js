@@ -4,9 +4,14 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
   // Config-driven bits
-  // Download buttons go to /download, which starts the download and shows install steps.
+  // Download buttons name the visitor's platform; /download starts it and shows install steps.
+  if (cfg.downloads) {
+    const os = cfg.platform();
+    const names = { windows: "Windows", mac: "macOS", linux: "Linux" };
+    $$("[data-download]").forEach((a) => (a.href = `/download?start&os=${os}`));
+    $$("[data-download-label]").forEach((el) => (el.textContent = `Download for ${names[os]}`));
+  }
   if (cfg.version) $$("[data-version]").forEach((el) => (el.textContent = "v" + cfg.version));
-  if (cfg.installerSize) $$("[data-size]").forEach((el) => (el.textContent = cfg.installerSize));
   // Copy the CLI install command.
   const copy = $("#copy-install");
   copy?.addEventListener("click", async () => {

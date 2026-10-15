@@ -20,17 +20,13 @@
     <main class="dl">
       <div class="wrap">
         <img src="/assets/icon.svg" alt="" width="72" height="72" style="margin: 0 auto 24px" />
-        <h1 id="title">Thanks for downloading SwarmCode</h1>
-        <p class="lede" id="msg">Your download will start in a moment.</p>
-        <div class="cta-row"><a class="btn primary lg" id="again" href="#">Download again</a><a class="btn lg" href="/">Back to site</a></div>
+        <h1 id="title">Download SwarmCode</h1>
+        <p class="lede" id="msg">Free and open source, for Windows, macOS and Linux.</p>
+        <div class="cta-row"><a class="btn primary lg" id="primary" href="#">Download</a><a class="btn lg" href="/">Back to site</a></div>
         <p class="fine" id="verify"></p>
-        <ol>
-          <li>If Chrome says the file <i>isn't commonly downloaded</i>, open the download list and choose <b>Keep</b>. New apps show this until enough people have downloaded them.</li>
-          <li>Run <b>SwarmCode-Setup</b> from your downloads.</li>
-          <li>If Windows SmartScreen appears, click <b>More info</b>, then <b>Run anyway</b>. Early builds aren't code-signed yet.</li>
-          <li>Open SwarmCode, sign in, and add a model: an API key, or a free local model with Ollama.</li>
-          <li>Prefer the terminal? <code>npm i -g swarmcode</code>, then <code>swarm</code>.</li>
-        </ol>
+        <div class="platforms" id="platforms"></div>
+        <ol id="steps"></ol>
+        <p class="fine">Prefer the terminal? <code>npm i -g github:yogeshwardev/MYCODE</code>, then run <code>swarm</code>. <a href="https://github.com/yogeshwardev/MYCODE/releases">All releases</a></p>
       </div>
     </main>
     <footer class="footer">
@@ -49,17 +45,31 @@
     </footer>
     <script>
       (() => {
-        const cfg = window.SWARMCODE_SITE || {};
-        const again = document.getElementById("again");
-        if (cfg.downloadUrl) {
-          again.href = cfg.downloadUrl;
-          if (cfg.sha256) document.getElementById("verify").innerHTML = `SHA-256 <code>${cfg.sha256}</code> · <a href="${cfg.releaseUrl || cfg.downloadUrl}">release notes</a>`;
-          setTimeout(() => (location.href = cfg.downloadUrl), 600);
-        } else {
-          document.getElementById("title").textContent = "Download coming soon";
-          document.getElementById("msg").textContent = "The Windows installer is being published. Meanwhile, the CLI works on every OS.";
-          again.remove();
-        }
+        const cfg = window.SWARMCODE_SITE;
+        const $ = (id) => document.getElementById(id);
+        const STEPS = {
+          windows: [
+            "If Chrome says the file <i>isn't commonly downloaded</i>, open the download list and choose <b>Keep</b>. New apps show this until enough people have downloaded them.",
+            "Run <b>SwarmCode-Setup</b>. If Windows SmartScreen appears, click <b>More info</b>, then <b>Run anyway</b>. Signed builds are coming.",
+          ],
+          mac: [
+            "Open the .dmg and drag SwarmCode to Applications.",
+            "This build isn't notarized yet. If macOS says it's damaged or can't be opened, run <code>xattr -cr /Applications/SwarmCode.app</code> in Terminal once.",
+          ],
+          linux: ["Make the AppImage executable with <code>chmod +x SwarmCode-*.AppImage</code>, then run it. On Debian or Ubuntu you can install the .deb instead."],
+        };
+        const params = new URLSearchParams(location.search);
+        const os = cfg.downloads[params.get("os")] ? params.get("os") : cfg.platform();
+        const d = cfg.downloads[os];
+        $("primary").href = cfg.url(os);
+        $("primary").textContent = `Download for ${d.label} · ${d.size}`;
+        $("title").textContent = params.has("start") ? "Your download is starting" : "Download SwarmCode";
+        $("verify").innerHTML = `v${cfg.version} · SHA-256 <code class="sha">${d.sha256}</code> · <a href="${cfg.releaseUrl}">release notes</a>`;
+        $("platforms").innerHTML = Object.entries(cfg.downloads)
+          .map(([key, x]) => `<a class="platform${key === os ? " on" : ""}" href="${cfg.url(key)}"><b>${x.label}</b><span>${x.file} · ${x.size}</span></a>`)
+          .join("");
+        $("steps").innerHTML = [...STEPS[os === "deb" ? "linux" : os], "Open SwarmCode, sign in if you like, and add a model: an API key, or a free local model with Ollama."].map((s) => `<li>${s}</li>`).join("");
+        if (params.has("start")) setTimeout(() => (location.href = cfg.url(os)), 700);
       })();
     </script>
   </body>

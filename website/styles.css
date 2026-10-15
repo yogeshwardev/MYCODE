@@ -303,3 +303,12 @@ h2 { font-size: clamp(30px, 4.2vw, 46px); line-height: 1.1; letter-spacing: -0.0
 
 .parity { margin: 22px 0 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); font-size: 15px; background: var(--bg-1); }
 .parity b { color: var(--text); font-weight: 500; }
+
+/* Download page */
+.platforms { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; max-width: 860px; margin: 34px auto 0; text-align: left; }
+.platform { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-1); transition: border-color 0.15s; }
+.platform:hover { border-color: var(--line-2); }
+.platform.on { border-color: #4a4a4a; background: linear-gradient(180deg, #151515, var(--bg-1)); }
+.platform b { font-weight: 500; font-size: 14px; }
+.platform span { font: 12px var(--mono); color: var(--dim); overflow-wrap: anywhere; }
+.dl code.sha { font-size: 11px; overflow-wrap: anywhere; }

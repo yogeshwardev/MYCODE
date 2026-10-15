@@ -41,7 +41,7 @@
             <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.71 1.23 1.87.87 2.33.67.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
             <span>GitHub</span><span class="stars" id="stars" hidden></span>
           </a>
-          <a class="btn primary sm" href="/download" data-download>Download</a>
+          <a class="btn primary sm" href="/download">Download</a>
         </div>
       </div>
     </header>
@@ -50,13 +50,13 @@
       <!-- Hero -->
       <section class="hero">
         <div class="wrap">
-          <p class="eyebrow"><span class="dot"></span> <span data-version>v1.0</span> for Windows · free with your own models</p>
+          <p class="eyebrow"><span class="dot"></span> <span data-version>v1.1</span> for Windows, macOS and Linux · free with your own models</p>
           <h1>One prompt.<br />A whole engineering team.</h1>
           <p class="lede">Other coding agents give you one assistant. SwarmCode gives you a team: a planner, parallel builders, a tester, a reviewer and a security check. You get back one clean diff with proof that it works.</p>
           <div class="cta-row">
-            <a class="btn primary lg" href="/download" data-download>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zm8.5 0H21V21l-9.5-1.3z" fill="currentColor"/></svg>
-              Download for Windows
+            <a class="btn primary lg" href="/download?start" data-download>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span data-download-label>Download</span>
             </a>
             <a class="btn lg" href="#benchmarks">See the benchmarks</a>
           </div>
@@ -65,7 +65,7 @@
             <code id="install-cmd">npm i -g github:yogeshwardev/MYCODE</code>
             <button type="button" class="copy" id="copy-install" aria-label="Copy install command">Copy</button>
           </div>
-          <p class="fine">Windows app <span data-size>101 MB</span> · Windows 10/11 · open source, <a href="https://github.com/yogeshwardev/MYCODE">read the code</a></p>
+          <p class="fine">Windows 10/11 · macOS (Apple Silicon) · Linux · <a href="/download">all downloads</a> · open source, <a href="https://github.com/yogeshwardev/MYCODE">read the code</a></p>
           <div class="stats" id="stats">
 <!-- stats:start -->
 <div><b>Lean</b><span>context: journals and recall instead of re-reading</span></div>
@@ -360,8 +360,8 @@
             <details><summary>Is it free?</summary><p>Yes. SwarmCode is open source (Apache-2.0). You pay your model provider for usage, or use free and local models through Ollama.</p></details>
             <details><summary>Which models work best?</summary><p>Any capable tool-calling model works. A strong model (such as Claude Opus or GPT-class) for planning and review, with a faster one for the parallel workers, gives the best balance of quality and cost.</p></details>
             <details><summary>Do I need git?</summary><p>For parallel agents and best-of-3, yes: each agent works in its own git worktree. The single agent works in any folder.</p></details>
-            <details><summary>Windows says the app is unrecognized.</summary><p>Early builds are not code-signed yet. Click "More info", then "Run anyway". Signed builds are on the way.</p></details>
-            <details><summary>macOS and Linux?</summary><p>The CLI runs everywhere (<code>npm i -g swarmcode</code>). Desktop builds for macOS and Linux come from the same code and are coming soon.</p></details>
+            <details><summary>Windows or macOS blocks the app.</summary><p>Early builds aren't code-signed yet. On Windows, click "More info", then "Run anyway". On macOS, run <code>xattr -cr /Applications/SwarmCode.app</code> once. Each release lists SHA-256 checksums so you can verify the file, and signed builds are on the way.</p></details>
+            <details><summary>macOS and Linux?</summary><p>Yes. The desktop app is available for Windows, macOS (Apple Silicon) and Linux (AppImage and .deb) on the <a href="/download">download page</a>, and the CLI runs anywhere Node.js 22 does.</p></details>
             <details><summary>Can my team share skills?</summary><p>Yes. Turn a good session into a skill with one command, and share it with SHA-256 pinning and Ed25519 signatures so nobody can tamper with it.</p></details>
           </div>
         </div>
@@ -374,7 +374,7 @@
           <h2>Stop babysitting your AI.<br />Give it a team.</h2>
           <p class="sub center-sub">Free and open source. Bring any model, or run fully local.</p>
           <div class="cta-row center">
-            <a class="btn primary lg" href="/download" data-download>Download for Windows</a>
+            <a class="btn primary lg" href="/download?start" data-download><span data-download-label>Download</span></a>
             <a class="btn lg" href="#how">How it works</a>
           </div>
         </div>
