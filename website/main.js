@@ -5,7 +5,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
   // Config-driven bits
-  if (cfg.downloadUrl) $$("[data-download]").forEach((a) => (a.href = cfg.downloadUrl));
+  // Download buttons go to /download, which starts the download and shows install steps.
   if (cfg.version) $$("[data-version]").forEach((el) => (el.textContent = "v" + cfg.version));
   if (cfg.installerSize) $$("[data-size]").forEach((el) => (el.textContent = cfg.installerSize));
   if (cfg.repoUrl) $$(".repo-link").forEach((a) => { a.href = cfg.repoUrl; a.hidden = false; });

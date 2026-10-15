@@ -29,7 +29,21 @@
     "files": [
       "dist/**/*",
       "!dist/**/*.map",
-      "package.json"
+      "package.json",
+      "!**/node_modules/@napi-rs/**",
+      "!**/node_modules/pdfjs-dist/build/**",
+      "!**/node_modules/pdfjs-dist/web/**",
+      "!**/node_modules/pdfjs-dist/image_decoders/**",
+      "!**/node_modules/pdfjs-dist/legacy/web/**",
+      "!**/node_modules/pdfjs-dist/legacy/image_decoders/**",
+      "!**/node_modules/pdfjs-dist/legacy/build/*.min.mjs",
+      "!**/node_modules/pdfjs-dist/legacy/build/pdf.sandbox*",
+      "!**/node_modules/playwright-core/lib/vite/**",
+      "!**/node_modules/**/*.map",
+      "!**/node_modules/**/*.d.ts",
+      "!**/node_modules/**/*.d.mts",
+      "!**/node_modules/**/{README,CHANGELOG,HISTORY}*",
+      "!**/node_modules/**/*.md"
     ],
     "directories": {
       "output": "release",
@@ -68,7 +82,11 @@
       "category": "Development",
       "icon": "build/icon.png"
     },
-    "copyright": "Copyright \u00a9 2026 SwarmCode contributors"
+    "copyright": "Copyright © 2026 SwarmCode contributors",
+    "electronLanguages": [
+      "en-US"
+    ],
+    "compression": "maximum"
   },
   "author": {
     "name": "SwarmCode contributors"

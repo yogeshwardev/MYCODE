@@ -21,7 +21,7 @@ import { openPullRequest, planPullRequest } from "./quality/pr.js";
 import { latestProof } from "./quality/proof.js";
 import { listSessions } from "./sessions.js";
 import { loadSkills, type Skill } from "./skills.js";
-import { git, isGitRepo, repoRoot } from "./swarm/git.js";
+import { git, resolveProject } from "./swarm/git.js";
 import { boardPrinter, c, printPlan, Renderer } from "./ui/term.js";
 import { VERSION } from "./version.js";
 
@@ -462,8 +462,8 @@ function showModels(cfg: SwarmCodeConfig) {
   console.log(c.gray(`  max parallel agents: ${cfg.maxParallel}${cfg.budgetUsd ? ` · budget $${cfg.budgetUsd}` : ""}`));
 }
 
-async function clean(root: string) {
-  if (!(await isGitRepo(root))) return console.log("Not a git repository; nothing to clean.");
+async function clean(root: string, isRepo: boolean) {
+  if (!isRepo) return console.log("Not a git repository; nothing to clean.");
   const dir = path.join(root, ".swarmcode", "worktrees");
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
   await git(root, ["worktree", "prune"]);
@@ -475,7 +475,7 @@ async function clean(root: string) {
 async function main(): Promise<number> {
   const flags = parseArgs(process.argv.slice(2));
   const [cmd, ...rest] = flags._;
-  const root = (await isGitRepo(process.cwd())) ? await repoRoot(process.cwd()) : process.cwd();
+  const { root, isRepo } = await resolveProject(process.cwd());
   switch (cmd) {
     case "help":
       console.log(HELP);
@@ -494,7 +494,7 @@ async function main(): Promise<number> {
       for (const s of listSessions(root).slice(0, 20)) console.log(`${c.cyan(s.id)}  ${c.gray(s.updated.slice(0, 16).replace("T", " "))}  ${s.title}`);
       return 0;
     case "clean":
-      await clean(root);
+      await clean(root, isRepo);
       return 0;
     case "skills":
       printSkills(loadSkills(root));
@@ -566,9 +566,33 @@ async function main(): Promise<number> {
         if (piped) return runTask({ ...flags, yes: true }, piped, "auto");
       }
       return interactive(flags);
-    default:
+    default: {
+      const near = flags._.length === 1 ? nearCommand(cmd) : undefined;
+      if (near) {
+        console.error(c.red(`swarm: unknown command "${cmd}". Did you mean "swarm ${near}"?`) + c.gray(` To send it to the agent as a task, quote it with more words.`));
+        return 1;
+      }
       return runTask(flags, flags._.join(" "), "auto");
+    }
   }
+}
+
+const COMMANDS = ["help", "version", "init", "models", "sessions", "clean", "skills", "run", "best", "auto", "estimate", "health", "proof", "pr", "replay", "fork", "skill", "trace", "ask"];
+
+/** A one-word argument that is a typo of a command (same first letter, edit distance <= 2). */
+function nearCommand(word: string | undefined): string | undefined {
+  if (!word || word.length < 4 || !/^[a-z-]+$/.test(word)) return undefined;
+  const dist = (a: string, b: string) => {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++)
+      for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  };
+  return COMMANDS.filter((cmd) => cmd !== word && cmd[0] === word[0] && cmd.length >= 4)
+    .map((cmd) => ({ cmd, d: dist(word, cmd) }))
+    .filter((x) => x.d <= 2)
+    .sort((a, b) => a.d - b.d)[0]?.cmd;
 }
 
 main().then(

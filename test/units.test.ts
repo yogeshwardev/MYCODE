@@ -6,6 +6,8 @@ import { test } from "node:test";
 import { validatePlan, type Plan } from "../src/swarm/planner.js";
 import { CORE_TOOLS, validateInput } from "../src/tools/index.js";
 import { clip, confine, globToRegExp } from "../src/util.js";
+import { resolveProject } from "../src/swarm/git.js";
+import { execFileSync } from "node:child_process";
 
 test("globToRegExp", () => {
   assert.ok(globToRegExp("src/**/*.ts").test("src/a/b/c.ts"));
@@ -166,4 +168,21 @@ test("journal recall finds earlier details; offload keeps context small", async 
   const saved = /saved at (\S+);/.exec(small)![1];
   assert.equal(fs.readFileSync(path.join(dir, saved), "utf8"), big);
   assert.equal(offload("short", dir, "x"), "short");
+});
+
+test("a folder inside a git repo at the home directory is its own project", async () => {
+  const home = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "sc-home-")));
+  execFileSync("git", ["init", "-q"], { cwd: home });
+  const sub = path.join(home, "work", "app");
+  fs.mkdirSync(sub, { recursive: true });
+  const saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
+  process.env.HOME = process.env.USERPROFILE = home;
+  try {
+    assert.deepEqual(await resolveProject(sub), { root: path.resolve(sub), isRepo: false, homeRepo: true });
+    // Opening the home folder itself still uses the repo.
+    assert.equal((await resolveProject(home)).isRepo, true);
+  } finally {
+    for (const [k, v] of Object.entries(saved)) v === undefined ? delete process.env[k] : (process.env[k] = v);
+    fs.rmSync(home, { recursive: true, force: true });
+  }
 });

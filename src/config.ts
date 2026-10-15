@@ -199,7 +199,9 @@ export function resolveSpec(cfg: SwarmCodeConfig, spec: string): ModelHandle {
   const key = providerKey(def);
   if (def.apiKeyEnv && !key && !def.baseURL?.includes("localhost")) {
     if (!(def.type === "anthropic" && process.env.ANTHROPIC_AUTH_TOKEN)) {
-      throw new Error(`Model ${spec} needs ${def.apiKeyEnv} to be set.`);
+      throw new Error(
+        `Model ${spec} needs the ${def.apiKeyEnv} environment variable. Set it, pick another model with --model (for example --model ollama/qwen3-coder for a free local model), or change the defaults in ${GLOBAL_CONFIG}.`,
+      );
     }
   }
   const window =

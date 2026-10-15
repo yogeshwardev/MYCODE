@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { Agent } from "./agent/agent.js";
 import { UsageTracker, type EventSink } from "./agent/events.js";
@@ -17,7 +16,7 @@ import { connectMcp, type McpConnection } from "./mcp.js";
 import { buildRepoMap, loadProjectInstructions } from "./repo/repomap.js";
 import { listSessions, loadSession, newSessionId, saveSession, type SavedSession } from "./sessions.js";
 import { loadSkills, makeSkillTool, skillIndex, suggestSkills, type Skill } from "./skills.js";
-import { excludeSwarmCodeDir, git, isGitRepo, repoRoot } from "./swarm/git.js";
+import { excludeSwarmCodeDir, git, resolveProject } from "./swarm/git.js";
 import { runSwarm, type SwarmResult, type TaskState } from "./swarm/orchestrator.js";
 import { runBestOf, type BestOfResult } from "./swarm/tournament.js";
 import { closeBrowsers } from "./tools/browser.js";
@@ -103,15 +102,8 @@ export class Engine {
 
   static async open(dir: string, hooks: EngineHooks, opts: EngineOptions = {}): Promise<Engine> {
     if (opts.model) process.env.SWARMCODE_MODEL = opts.model;
-    let isRepo = await isGitRepo(dir);
-    let root = isRepo ? await repoRoot(dir) : dir;
-    // A git repo at the home directory (dotfiles) is not the user's project:
-    // treat the folder they opened as the project instead of all of ~.
-    if (isRepo && path.resolve(root).toLowerCase() === path.resolve(os.homedir()).toLowerCase() && path.resolve(dir) !== path.resolve(root)) {
-      isRepo = false;
-      root = path.resolve(dir);
-      hooks.onWarning?.("This folder is inside a git repository at your home directory; treating the folder itself as the project (parallel agents are off).");
-    }
+    const { root, isRepo, homeRepo } = await resolveProject(dir);
+    if (homeRepo) hooks.onWarning?.("This folder is inside a git repository at your home directory; treating the folder itself as the project (parallel agents are off).");
     const cfg = loadConfig(root);
     if (isRepo) excludeSwarmCodeDir(root);
     if (opts.parallel) cfg.maxParallel = opts.parallel;

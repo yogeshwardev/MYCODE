@@ -390,6 +390,7 @@ function createWindow() {
         app.exit(1);
       });
       let ok = await win!.webContents.executeJavaScript("typeof window.swarm === 'object' && document.querySelector('#app') !== null");
+      console.log(`SMOKE startup ${Math.round(performance.now())}ms`);
       const project = process.env.SWARMCODE_SMOKE_PROJECT;
       if (ok && project) {
         // Exercise the bundled engine end to end: config, git, repo map, sessions.
@@ -407,7 +408,15 @@ function createWindow() {
         const text = await readDocument.run({ path: "smoke.pdf" }, ctx);
         console.log(`SMOKE docs ${/Hello from SwarmCode/.test(text) ? "ok" : "FAIL"}`);
         ok = /Hello from SwarmCode/.test(text);
+        const docx = process.env.SWARMCODE_SMOKE_DOCX;
+        if (ok && docx) {
+          const words = await readDocument.run({ path: docx }, ctx);
+          console.log(`SMOKE docx ${words.trim().length > 0 && !/^Error/i.test(words) ? "ok" : "FAIL " + words.slice(0, 120)}`);
+          ok = words.trim().length > 0 && !/^Error/i.test(words);
+        }
       }
+      const mem = await app.getAppMetrics();
+      console.log(`SMOKE memory ${Math.round(mem.reduce((a, m) => a + m.memory.workingSetSize, 0) / 1024)}MB across ${mem.length} processes`);
       console.log(`SMOKE ${ok ? "OK" : "FAIL"}`);
       app.exit(ok ? 0 : 1);
     });

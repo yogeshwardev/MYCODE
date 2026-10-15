@@ -24,7 +24,9 @@
         <h1 id="title">Thanks for downloading SwarmCode</h1>
         <p class="lede" id="msg">Your download will start in a moment.</p>
         <div class="cta-row"><a class="btn primary lg" id="again" href="#">Download again</a><a class="btn lg" href="/">Back to site</a></div>
+        <p class="fine" id="verify"></p>
         <ol>
+          <li>If Chrome says the file <i>isn't commonly downloaded</i>, open the download list and choose <b>Keep</b>. New apps show this until enough people have downloaded them.</li>
           <li>Run <b>SwarmCode-Setup</b> from your downloads.</li>
           <li>If Windows SmartScreen appears, click <b>More info</b>, then <b>Run anyway</b>. Early builds aren't code-signed yet.</li>
           <li>Open SwarmCode, sign in, and add a model: an API key, or a free local model with Ollama.</li>
@@ -38,6 +40,7 @@
         const again = document.getElementById("again");
         if (cfg.downloadUrl) {
           again.href = cfg.downloadUrl;
+          if (cfg.sha256) document.getElementById("verify").innerHTML = `SHA-256 <code>${cfg.sha256}</code> · <a href="${cfg.releaseUrl || cfg.downloadUrl}">release notes</a>`;
           setTimeout(() => (location.href = cfg.downloadUrl), 600);
         } else {
           document.getElementById("title").textContent = "Download coming soon";

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { Mutex, run, type ExecResult } from "../util.js";
 
@@ -24,6 +25,17 @@ export async function isGitRepo(dir: string): Promise<boolean> {
 
 export async function repoRoot(dir: string): Promise<string> {
   return path.resolve(await gitOk(dir, ["rev-parse", "--show-toplevel"]));
+}
+
+/**
+ * Where a folder's project lives. A git repo at the home directory (dotfiles)
+ * is not the user's project, so a folder inside it is its own project.
+ */
+export async function resolveProject(dir: string): Promise<{ root: string; isRepo: boolean; homeRepo: boolean }> {
+  if (!(await isGitRepo(dir))) return { root: path.resolve(dir), isRepo: false, homeRepo: false };
+  const root = await repoRoot(dir);
+  const atHome = root.toLowerCase() === path.resolve(os.homedir()).toLowerCase() && path.resolve(dir) !== root;
+  return atHome ? { root: path.resolve(dir), isRepo: false, homeRepo: true } : { root, isRepo: true, homeRepo: false };
 }
 
 /**

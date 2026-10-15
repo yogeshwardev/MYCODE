@@ -12,7 +12,8 @@ const out = path.join(here, preview ? "dist-preview" : "dist");
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, "renderer"), { recursive: true });
 
-const common = { bundle: true, sourcemap: true, logLevel: "warning", legalComments: "none" };
+// Release builds are minified: less to parse means a faster start.
+const common = { bundle: true, sourcemap: true, logLevel: "warning", legalComments: "none", minify: !preview, keepNames: true };
 
 if (!preview) {
   await esbuild.build({

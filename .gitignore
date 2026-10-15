@@ -8,7 +8,7 @@ desktop/release/
 *.tsbuildinfo
 bench/results/
 bench/.last-results.json
-desktop/release-new/
+desktop/release*/
 .claude/
 *.log
 .env
